@@ -13,6 +13,11 @@ const Canvas = React.forwardRef<HTMLDivElement>((_, ref) => {
     borderRadius,
     textColor,
     textVAlign,
+    titleSize,
+    contentSize,
+    textHAlign,
+    textOffsetX,
+    textOffsetY,
     isCropping,
     crop,
     setCrop,
@@ -24,6 +29,16 @@ const Canvas = React.forwardRef<HTMLDivElement>((_, ref) => {
   const textStyle: React.CSSProperties = {
     color: textColor,
     justifyContent: textVAlign === 'top' ? 'flex-start' : textVAlign === 'bottom' ? 'flex-end' : 'center',
+    alignItems: textHAlign === 'left' ? 'flex-start' : textHAlign === 'right' ? 'flex-end' : 'center',
+    transform: `translate(${textOffsetX}px, ${textOffsetY}px)`,
+  };
+
+  const titleStyle: React.CSSProperties = {
+    fontSize: `${titleSize}px`,
+  };
+
+  const contentStyle: React.CSSProperties = {
+    fontSize: `${contentSize}px`,
   };
 
   return (
@@ -42,17 +57,19 @@ const Canvas = React.forwardRef<HTMLDivElement>((_, ref) => {
         ) : (
           <>
             {(croppedImage || imageSrc) && (
-              <img 
-                src={(croppedImage || imageSrc) ?? undefined} 
-                alt="Preview" 
-                className="preview-image"
-                style={{ borderRadius: `${borderRadius}px` }}
-              />
+              <div className="image-container">
+                <img 
+                  src={(croppedImage || imageSrc) ?? undefined} 
+                  alt="Preview" 
+                  className="preview-image"
+                  style={{ borderRadius: `${borderRadius}px` }}
+                />
+                <div className="text-overlay" style={textStyle}>
+                  <h1 className="title-text" style={titleStyle}>{title}</h1>
+                  <p className="content-text" style={contentStyle}>{content}</p>
+                </div>
+              </div>
             )}
-            <div className="text-overlay" style={textStyle}>
-              <h1 className="title-text">{title}</h1>
-              <p className="content-text">{content}</p>
-            </div>
           </>
         )}
       </div>

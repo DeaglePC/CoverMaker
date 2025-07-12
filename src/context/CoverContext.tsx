@@ -20,6 +20,18 @@ interface CoverContextType {
     setTextColor: (color: string) => void;
     textVAlign: VAlign;
     setTextVAlign: (align: VAlign) => void;
+    // 添加文字大小控制
+    titleSize: number;
+    setTitleSize: (size: number) => void;
+    contentSize: number;
+    setContentSize: (size: number) => void;
+    // 添加文字位置控制
+    textHAlign: 'left' | 'center' | 'right';
+    setTextHAlign: (align: 'left' | 'center' | 'right') => void;
+    textOffsetX: number;
+    setTextOffsetX: (offset: number) => void;
+    textOffsetY: number;
+    setTextOffsetY: (offset: number) => void;
     crop: { x: number; y: number };
     setCrop: (crop: { x: number; y: number }) => void;
     zoom: number;
@@ -59,6 +71,13 @@ export const CoverProvider: React.FC<CoverProviderProps> = ({ children }) => {
     const [borderRadius, setBorderRadius] = useState<number>(0);
     const [textColor, setTextColor] = useState<string>('#ffffff');
     const [textVAlign, setTextVAlign] = useState<VAlign>('center'); // Corrected 'middle' to 'center'
+    // 添加文字大小状态
+    const [titleSize, setTitleSize] = useState<number>(32);
+    const [contentSize, setContentSize] = useState<number>(18);
+    // 添加文字位置状态
+    const [textHAlign, setTextHAlign] = useState<'left' | 'center' | 'right'>('center');
+    const [textOffsetX, setTextOffsetX] = useState<number>(0);
+    const [textOffsetY, setTextOffsetY] = useState<number>(0);
     const [crop, setCrop] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
     const [zoom, setZoom] = useState<number>(1);
     const [completedCrop, setCompletedCrop] = useState<Area | null>(null);
@@ -104,7 +123,12 @@ export const CoverProvider: React.FC<CoverProviderProps> = ({ children }) => {
                 content,
                 textColor,
                 textVAlign,
-                borderRadius
+                borderRadius,
+                titleSize,
+                contentSize,
+                textHAlign,
+                textOffsetX,
+                textOffsetY
             };
             
             const imageBlobUrl = await getFinalImage(options);
@@ -169,6 +193,17 @@ export const CoverProvider: React.FC<CoverProviderProps> = ({ children }) => {
         setTextColor,
         textVAlign,
         setTextVAlign,
+        // 添加文字大小和位置控制
+        titleSize,
+        setTitleSize,
+        contentSize,
+        setContentSize,
+        textHAlign,
+        setTextHAlign,
+        textOffsetX,
+        setTextOffsetX,
+        textOffsetY,
+        setTextOffsetY,
         crop,
         setCrop,
         zoom,

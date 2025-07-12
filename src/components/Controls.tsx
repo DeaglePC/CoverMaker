@@ -19,6 +19,16 @@ function Controls() {
     textColor,
     textVAlign,
     zoom,
+    titleSize,
+    setTitleSize,
+    contentSize,
+    setContentSize,
+    textHAlign,
+    setTextHAlign,
+    textOffsetX,
+    setTextOffsetX,
+    textOffsetY,
+    setTextOffsetY,
     isCropping,
     handleApplyCrop,
     handleDownload,
@@ -53,12 +63,69 @@ function Controls() {
       </div>
 
       <div className="control-group">
-        <label>文字位置</label>
+        <label>文字垂直位置</label>
         <div className="align-buttons">
           <button onClick={() => setTextVAlign('top')} className={textVAlign === 'top' ? 'active' : ''}>顶部</button>
           <button onClick={() => setTextVAlign('center')} className={textVAlign === 'center' ? 'active' : ''}>居中</button>
           <button onClick={() => setTextVAlign('bottom')} className={textVAlign === 'bottom' ? 'active' : ''}>底部</button>
         </div>
+      </div>
+
+      <div className="control-group">
+        <label>文字水平位置</label>
+        <div className="align-buttons">
+          <button onClick={() => setTextHAlign('left')} className={textHAlign === 'left' ? 'active' : ''}>左对齐</button>
+          <button onClick={() => setTextHAlign('center')} className={textHAlign === 'center' ? 'active' : ''}>居中</button>
+          <button onClick={() => setTextHAlign('right')} className={textHAlign === 'right' ? 'active' : ''}>右对齐</button>
+        </div>
+      </div>
+
+      <div className="control-group">
+        <label>标题大小: {titleSize}px</label>
+        <input
+          type="range"
+          min="12"
+          max="80"
+          value={titleSize}
+          onChange={(e) => setTitleSize(Number(e.target.value))}
+          className="slider"
+        />
+      </div>
+
+      <div className="control-group">
+        <label>内容大小: {contentSize}px</label>
+        <input
+          type="range"
+          min="10"
+          max="60"
+          value={contentSize}
+          onChange={(e) => setContentSize(Number(e.target.value))}
+          className="slider"
+        />
+      </div>
+
+      <div className="control-group">
+        <label>水平偏移: {textOffsetX}px</label>
+        <input
+          type="range"
+          min="-200"
+          max="200"
+          value={textOffsetX}
+          onChange={(e) => setTextOffsetX(Number(e.target.value))}
+          className="slider"
+        />
+      </div>
+
+      <div className="control-group">
+        <label>垂直偏移: {textOffsetY}px</label>
+        <input
+          type="range"
+          min="-200"
+          max="200"
+          value={textOffsetY}
+          onChange={(e) => setTextOffsetY(Number(e.target.value))}
+          className="slider"
+        />
       </div>
 
       <div className="control-group">

@@ -19,6 +19,12 @@ export interface DrawOptions {
   textColor: string;
   textVAlign: 'top' | 'center' | 'bottom';
   borderRadius: number;
+  // 添加文字大小和位置控制
+  titleSize?: number;
+  contentSize?: number;
+  textHAlign?: 'left' | 'center' | 'right';
+  textOffsetX?: number;
+  textOffsetY?: number;
 }
 
 /**
@@ -68,6 +74,11 @@ export async function getFinalImage(
     textColor,
     textVAlign,
     borderRadius,
+    titleSize = 32,
+    contentSize = 18,
+    textHAlign = 'center',
+    textOffsetX = 0,
+    textOffsetY = 0,
   } = options;
 
   const image = await createImage(imageSrc);
@@ -114,14 +125,14 @@ export async function getFinalImage(
   const padding = canvas.width * 0.05; 
   const maxWidth = canvas.width - padding * 2;
 
-  // Title styles
-  const titleFontSize = Math.max(24, canvas.width / 20);
+  // Title styles - 使用动态字体大小
+  const titleFontSize = titleSize;
   ctx.fillStyle = textColor;
   ctx.font = `bold ${titleFontSize}px "Microsoft YaHei", sans-serif`;
-  ctx.textAlign = 'center';
+  ctx.textAlign = textHAlign;
 
-  // Content styles
-  const contentFontSize = Math.max(16, canvas.width / 30);
+  // Content styles - 使用动态字体大小
+  const contentFontSize = contentSize;
   const contentFont = `${contentFontSize}px "Microsoft YaHei", sans-serif`;
 
   // Calculate text positions
@@ -141,6 +152,23 @@ export async function getFinalImage(
     titleY = startY + titleFontSize;
     contentY = titleY + titleFontSize * lineHeighRatio;
   }
+
+  // 应用偏移量
+  titleY += textOffsetY;
+  contentY += textOffsetY;
+
+  // 计算 X 位置
+  let titleX, contentX;
+  if (textHAlign === 'left') {
+    titleX = padding + textOffsetX;
+    contentX = padding + textOffsetX;
+  } else if (textHAlign === 'right') {
+    titleX = canvas.width - padding + textOffsetX;
+    contentX = canvas.width - padding + textOffsetX;
+  } else { // center
+    titleX = canvas.width / 2 + textOffsetX;
+    contentX = canvas.width / 2 + textOffsetX;
+  }
   
   // To make text more readable, add a subtle shadow/outline
   ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
@@ -149,10 +177,10 @@ export async function getFinalImage(
   ctx.shadowOffsetY = 2;
 
   // Draw title and content
-  ctx.fillText(title, canvas.width / 2, titleY, maxWidth);
+  ctx.fillText(title, titleX, titleY, maxWidth);
   
   ctx.font = contentFont;
-  ctx.fillText(content, canvas.width / 2, contentY, maxWidth);
+  ctx.fillText(content, contentX, contentY, maxWidth);
 
   // --- Export ---
   return new Promise((resolve, reject) => {
