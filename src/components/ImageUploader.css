@@ -1,0 +1,24 @@
+.image-uploader {
+  width: 100%;
+  height: 100%;
+  border: 2px dashed #cccccc;
+  border-radius: 8px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: border-color 0.3s, background-color 0.3s;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.image-uploader:hover {
+  border-color: #007bff;
+  background-color: #f8f9fa;
+}
+
+.image-uploader p {
+  color: #6c757d;
+  font-weight: 500;
+} 

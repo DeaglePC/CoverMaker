@@ -1,0 +1,68 @@
+.cover-maker {
+  display: grid;
+  grid-template-columns: 1fr 320px; /* Canvas on left, Controls on right */
+  gap: 1.5rem;
+  padding: 1.5rem;
+  width: 95%;
+  max-width: 1400px;
+  height: 90%;
+  max-height: 800px;
+  background-color: #f8f9fa;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+  box-sizing: border-box;
+  margin: 0 auto; /* 水平居中 */
+}
+
+.canvas-container {
+  display: flex; /* 改为 flex 布局以更好地控制内容尺寸 */
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  min-width: 0;  /* Prevents the grid cell from expanding */
+  min-height: 0;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  overflow: hidden; /* 防止内容溢出 */
+}
+
+.controls-container {
+  padding: 1rem;
+  overflow-y: auto;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+}
+
+.placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  color: #6c757d;
+  font-size: 1.2rem;
+  font-weight: 500;
+  text-align: center;
+  padding: 2rem;
+  box-sizing: border-box;
+}
+
+@media (max-width: 1024px) {
+  .cover-maker {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr; /* Controls auto height, canvas takes rest */
+    width: 100%;
+    height: 100%;
+    border-radius: 0;
+    padding: 1rem;
+    gap: 1rem;
+  }
+  
+  .controls-container {
+    order: -1; /* Move controls to the top on mobile */
+  }
+} 
