@@ -5,8 +5,8 @@
   padding: 1.5rem;
   width: 95%;
   max-width: 1500px;
-  height: 90%;
-  max-height: 960px;
+  height: 90vh; /* 使用视口高度 */
+  max-height: 1000px; /* 增加最大高度 */
   background-color: #f8f9fa;
   border-radius: 12px;
   box-shadow: 0 8px 24px rgba(0,0,0,0.1);
@@ -29,10 +29,8 @@
 }
 
 .controls-container {
-  padding: 1rem;
-  overflow-y: auto;
-  background-color: #f8f9fa;
-  border-radius: 8px;
+  height: 100%;
+  overflow: hidden;
 }
 
 .placeholder {

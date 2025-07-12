@@ -1,19 +1,38 @@
+.controls-wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
 .controls-section {
   display: flex;
   flex-direction: column;
   gap: 1.25rem; /* Consistent gap between control groups */
   padding: 1rem;
-  background-color: #f8f9fa;
-  border-radius: 8px;
-  height: 100%;
-  box-sizing: border-box;
+  flex: 1;
   overflow-y: auto;
+  /* 为底部按钮留出空间 */
+  padding-bottom: 0.5rem;
+}
+
+.fixed-bottom-actions {
+  position: sticky;
+  bottom: 0;
+  background-color: #f8f9fa;
+  border-top: 1px solid #dee2e6;
+  padding: 1rem;
+  margin-top: auto;
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .control-group-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1rem;
+  margin-bottom: 1rem;
 }
 
 .control-button {
@@ -46,10 +65,32 @@
   transform: translateY(-1px);
 }
 
+.preview-button {
+  background-color: #3498db;
+  color: white;
+}
+.preview-button:hover:not(:disabled) {
+  background-color: #2980b9;
+  transform: translateY(-1px);
+}
+.preview-button:disabled {
+  background-color: #bdc3c7;
+  cursor: not-allowed;
+}
+
+.clear-preview-button {
+  background-color: #e74c3c;
+  color: white;
+}
+.clear-preview-button:hover {
+  background-color: #c0392b;
+  transform: translateY(-1px);
+}
+
 .download-button {
   background-color: #198754;
   color: white;
-  margin-top: 1rem; /* Add some space before the final button */
+  width: 100%;
 }
 .download-button:hover {
   background-color: #157347;
@@ -92,6 +133,7 @@
   resize: vertical;
 }
 
+/* 按钮组样式 */
 .aspect-ratio-buttons, .align-buttons {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
@@ -119,6 +161,7 @@
   background-color: #e9ecef;
 }
 
+/* 颜色选择器样式 */
 .color-picker-container {
   display: flex;
   align-items: center;
@@ -144,52 +187,75 @@
   border: none;
   cursor: pointer;
 }
+
 .color-picker::-webkit-color-swatch {
   border-radius: 6px;
   border: 1px solid #ddd;
 }
+
 .color-picker::-moz-color-swatch {
   border-radius: 6px;
   border: 1px solid #ddd;
 }
 
+/* 滑块样式优化 */
 .slider {
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  appearance: none;
   width: 100%;
   height: 6px;
   border-radius: 3px;
-  background: #dee2e6;
+  background: #ddd;
   outline: none;
-  opacity: 0.8;
-  transition: opacity .2s;
-  margin-top: 4px;
+  transition: background 0.2s;
+  cursor: pointer;
 }
 
 .slider:hover {
-  opacity: 1;
-}
-
-.slider:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
+  background: #bbb;
 }
 
 .slider::-webkit-slider-thumb {
-  -webkit-appearance: none;
   appearance: none;
   width: 18px;
   height: 18px;
   border-radius: 50%;
-  background: #0d6efd;
+  background: #3498db;
   cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s ease-in-out;
+}
+
+.slider::-webkit-slider-thumb:hover {
+  background: #2980b9;
+  transform: scale(1.1);
 }
 
 .slider::-moz-range-thumb {
   width: 18px;
   height: 18px;
   border-radius: 50%;
-  background: #0d6efd;
+  background: #3498db;
   cursor: pointer;
+  border: none;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s ease-in-out;
+}
+
+.slider::-moz-range-thumb:hover {
+  background: #2980b9;
+  transform: scale(1.1);
+}
+
+.slider:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.slider:disabled::-webkit-slider-thumb {
+  background: #bdc3c7;
+  cursor: not-allowed;
+}
+
+.slider:disabled::-moz-range-thumb {
+  background: #bdc3c7;
+  cursor: not-allowed;
 } 

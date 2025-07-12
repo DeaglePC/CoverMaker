@@ -42,11 +42,17 @@ interface CoverContextType {
     croppedImage: string | null;
     // 添加新的 state 类型
     croppedImageDimensions: { width: number; height: number } | null;
+    // 添加预览相关状态
+    previewImage: string | null;
+    isGeneratingPreview: boolean;
     previewContainerRef: React.RefObject<HTMLDivElement | null>;
     onCropComplete: (croppedArea: Area, croppedAreaPixels: Area) => void;
     handleImageUpload: (file: File) => void;
     handleDownload: () => void;
     handleApplyCrop: () => void;
+    // 添加预览相关函数
+    handleGeneratePreview: () => void;
+    handleClearPreview: () => void;
 }
 
 const CoverContext = createContext<CoverContextType | undefined>(undefined);
@@ -85,6 +91,9 @@ export const CoverProvider: React.FC<CoverProviderProps> = ({ children }) => {
     // 定义新的 state
     const [croppedImageDimensions, setCroppedImageDimensions] = useState<{ width: number; height: number } | null>(null);
     const [isCropping, setIsCropping] = useState<boolean>(true);
+    // 添加预览相关状态
+    const [previewImage, setPreviewImage] = useState<string | null>(null);
+    const [isGeneratingPreview, setIsGeneratingPreview] = useState<boolean>(false);
     const previewContainerRef = useRef<HTMLDivElement>(null);
 
     const onCropComplete = useCallback((_croppedArea: Area, croppedAreaPixels: Area) => {
@@ -101,12 +110,74 @@ export const CoverProvider: React.FC<CoverProviderProps> = ({ children }) => {
                 setImageSrc(reader.result?.toString() ?? null);
                 setCroppedImage(null);
                 setCroppedImageDimensions(null); // 上传新图片时重置尺寸
+                setPreviewImage(null); // 清除预览图片
                 setIsCropping(true);
                 setZoom(1);
             });
             reader.readAsDataURL(file);
         }
     };
+
+    // 生成预览图片的函数
+    const handleGeneratePreview = useCallback(async () => {
+        if (!imageSrc || !completedCrop) {
+            alert('请先上传图片并完成裁剪');
+            return;
+        }
+
+        setIsGeneratingPreview(true);
+        try {
+            const finalImage = await getFinalImage({
+                imageSrc,
+                pixelCrop: completedCrop,
+                title,
+                content,
+                textColor,
+                textVAlign,
+                borderRadius,
+                titleSize,
+                contentSize,
+                textHAlign,
+                textOffsetX,
+                textOffsetY,
+            });
+            
+            if (finalImage) {
+                // 清理之前的预览图片URL
+                if (previewImage) {
+                    URL.revokeObjectURL(previewImage);
+                }
+                setPreviewImage(finalImage.url);
+            }
+        } catch (error) {
+            console.error('生成预览图片失败:', error);
+            alert('生成预览失败，请重试');
+        } finally {
+            setIsGeneratingPreview(false);
+        }
+    }, [
+        imageSrc,
+        completedCrop,
+        title,
+        content,
+        textColor,
+        textVAlign,
+        borderRadius,
+        titleSize,
+        contentSize,
+        textHAlign,
+        textOffsetX,
+        textOffsetY,
+        previewImage,
+    ]);
+
+    // 清理预览图片的函数
+    const handleClearPreview = useCallback(() => {
+        if (previewImage) {
+            URL.revokeObjectURL(previewImage);
+            setPreviewImage(null);
+        }
+    }, [previewImage]);
 
     const handleDownload = async () => {
         if (!completedCrop || !imageSrc) {
@@ -173,6 +244,9 @@ export const CoverProvider: React.FC<CoverProviderProps> = ({ children }) => {
                 setCroppedImageDimensions({ width: croppedImgResult.width, height: croppedImgResult.height });
             }
             setIsCropping(false);
+            
+            // 应用裁剪后自动生成预览
+            handleGeneratePreview();
         } catch (e) {
             console.error("handleApplyCrop 出错:", e);
         }
@@ -213,11 +287,16 @@ export const CoverProvider: React.FC<CoverProviderProps> = ({ children }) => {
         setIsCropping,
         croppedImage,
         croppedImageDimensions, // 传递新的 state
+        // 添加预览相关状态和函数
+        previewImage,
+        isGeneratingPreview,
         previewContainerRef,
         onCropComplete,
         handleImageUpload,
         handleDownload,
         handleApplyCrop,
+        handleGeneratePreview,
+        handleClearPreview,
     };
 
     return (

@@ -6,40 +6,17 @@ import { useCover } from '../context/CoverContext';
 const Canvas = React.forwardRef<HTMLDivElement>((_, ref) => {
   const {
     imageSrc,
-    croppedImage,
-    title,
-    content,
     aspect,
-    borderRadius,
-    textColor,
-    textVAlign,
-    titleSize,
-    contentSize,
-    textHAlign,
-    textOffsetX,
-    textOffsetY,
     isCropping,
     crop,
     setCrop,
     zoom,
     setZoom,
     onCropComplete,
+    completedCrop,
+    previewImage,
+    isGeneratingPreview,
   } = useCover();
-
-  const textStyle: React.CSSProperties = {
-    color: textColor,
-    justifyContent: textVAlign === 'top' ? 'flex-start' : textVAlign === 'bottom' ? 'flex-end' : 'center',
-    alignItems: textHAlign === 'left' ? 'flex-start' : textHAlign === 'right' ? 'flex-end' : 'center',
-    transform: `translate(${textOffsetX}px, ${textOffsetY}px)`,
-  };
-
-  const titleStyle: React.CSSProperties = {
-    fontSize: `${titleSize}px`,
-  };
-
-  const contentStyle: React.CSSProperties = {
-    fontSize: `${contentSize}px`,
-  };
 
   return (
     <div ref={ref} className="canvas-preview">
@@ -56,18 +33,32 @@ const Canvas = React.forwardRef<HTMLDivElement>((_, ref) => {
           />
         ) : (
           <>
-            {(croppedImage || imageSrc) && (
+            {isGeneratingPreview && (
+              <div className="loading-indicator">
+                <div className="spinner"></div>
+                <p>正在生成预览...</p>
+              </div>
+            )}
+            
+            {previewImage && !isGeneratingPreview && (
               <div className="image-container">
                 <img 
-                  src={(croppedImage || imageSrc) ?? undefined} 
-                  alt="Preview" 
+                  src={previewImage} 
+                  alt="预览图片" 
                   className="preview-image"
-                  style={{ borderRadius: `${borderRadius}px` }}
                 />
-                <div className="text-overlay" style={textStyle}>
-                  <h1 className="title-text" style={titleStyle}>{title}</h1>
-                  <p className="content-text" style={contentStyle}>{content}</p>
-                </div>
+              </div>
+            )}
+            
+            {!previewImage && !isGeneratingPreview && imageSrc && completedCrop && (
+              <div className="placeholder">
+                <p>点击右侧"生成预览"按钮查看最终效果</p>
+              </div>
+            )}
+            
+            {!completedCrop && imageSrc && (
+              <div className="placeholder">
+                <p>请先完成图片裁剪</p>
               </div>
             )}
           </>
