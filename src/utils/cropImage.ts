@@ -25,6 +25,16 @@ export interface DrawOptions {
   textHAlign?: 'left' | 'center' | 'right';
   textOffsetX?: number;
   textOffsetY?: number;
+  // 添加标题和内容间距控制
+  titleContentSpacing?: number;
+  // 添加文字背景控制
+  textBackgroundEnabled?: boolean;
+  textBackgroundColor?: string;
+  textBackgroundOpacity?: number;
+  textBackgroundBlur?: number;
+  // 添加魔法色控制
+  isMagicColorMode?: boolean;
+  magicColor?: string;
 }
 
 /**
@@ -74,11 +84,18 @@ export async function getFinalImage(
     textColor,
     textVAlign,
     borderRadius,
-    titleSize = 32,
-    contentSize = 18,
+    titleSize = 80,
+    contentSize = 38,
     textHAlign = 'center',
     textOffsetX = 0,
     textOffsetY = 0,
+    titleContentSpacing = 66,
+    textBackgroundEnabled = false,
+    textBackgroundColor = '#000000',
+    textBackgroundOpacity = 50,
+    textBackgroundBlur = 10,
+    isMagicColorMode = false,
+    magicColor = '#333333',
   } = options;
 
   const image = await createImage(imageSrc);
@@ -135,22 +152,21 @@ export async function getFinalImage(
   const contentFontSize = contentSize;
   const contentFont = `${contentFontSize}px "Microsoft YaHei", sans-serif`;
 
-  // Calculate text positions
+  // Calculate text positions using dynamic spacing
   let titleY, contentY;
-  const lineHeighRatio = 1.4;
 
   if (textVAlign === 'top') {
     titleY = padding + titleFontSize;
-    contentY = titleY + titleFontSize * lineHeighRatio;
+    contentY = titleY + titleContentSpacing;
   } else if (textVAlign === 'bottom') {
     // This is a rough estimation, can be improved
     contentY = canvas.height - padding - contentFontSize;
-    titleY = contentY - contentFontSize * lineHeighRatio;
+    titleY = contentY - titleContentSpacing - titleFontSize;
   } else { // center
-    const totalTextHeight = titleFontSize + contentFontSize * lineHeighRatio;
+    const totalTextHeight = titleFontSize + titleContentSpacing + contentFontSize;
     const startY = (canvas.height - totalTextHeight) / 2;
     titleY = startY + titleFontSize;
-    contentY = titleY + titleFontSize * lineHeighRatio;
+    contentY = titleY + titleContentSpacing;
   }
 
   // 应用偏移量
@@ -169,6 +185,49 @@ export async function getFinalImage(
     titleX = canvas.width / 2 + textOffsetX;
     contentX = canvas.width / 2 + textOffsetX;
   }
+
+  // Draw text background if enabled
+  if (textBackgroundEnabled && (title || content)) {
+    ctx.save();
+    
+    // Calculate text dimensions for background
+    ctx.font = `bold ${titleFontSize}px "Microsoft YaHei", sans-serif`;
+    const titleMetrics = ctx.measureText(title);
+    
+    ctx.font = contentFont;
+    const contentMetrics = ctx.measureText(content);
+    
+    // Calculate background dimensions - 延伸到整个画布宽度
+    const backgroundPadding = 20;
+    const backgroundWidth = canvas.width; // 使用整个画布宽度
+    const backgroundHeight = titleFontSize + titleContentSpacing + contentFontSize + backgroundPadding * 2;
+    
+    // Calculate background position - 从画布左边开始
+    const backgroundX = 0; // 从画布左边开始
+    const backgroundY = titleY - titleFontSize - backgroundPadding;
+    
+    // Draw background with opacity and blur effect
+    const opacity = textBackgroundOpacity / 100;
+    const hexColor = isMagicColorMode ? magicColor : textBackgroundColor;
+    const r = parseInt(hexColor.slice(1, 3), 16);
+    const g = parseInt(hexColor.slice(3, 5), 16);
+    const b = parseInt(hexColor.slice(5, 7), 16);
+    
+    ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${opacity})`;
+    
+    // Apply blur effect if specified
+    if (textBackgroundBlur > 0) {
+      ctx.filter = `blur(${textBackgroundBlur}px)`;
+    }
+    
+    // Draw rounded rectangle background
+    ctx.beginPath();
+    const bgRadius = 8;
+    roundRect(ctx, backgroundX, backgroundY, backgroundWidth, backgroundHeight, bgRadius);
+    ctx.fill();
+    
+    ctx.restore(); // Reset filter and other styles
+  }
   
   // To make text more readable, add a subtle shadow/outline
   ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
@@ -177,6 +236,8 @@ export async function getFinalImage(
   ctx.shadowOffsetY = 2;
 
   // Draw title and content
+  ctx.fillStyle = textColor;
+  ctx.font = `bold ${titleFontSize}px "Microsoft YaHei", sans-serif`;
   ctx.fillText(title, titleX, titleY, maxWidth);
   
   ctx.font = contentFont;

@@ -38,6 +38,21 @@ function Controls() {
     setTextOffsetX,
     textOffsetY,
     setTextOffsetY,
+    titleContentSpacing,
+    setTitleContentSpacing,
+    textBackgroundEnabled,
+    setTextBackgroundEnabled,
+    textBackgroundColor,
+    setTextBackgroundColor,
+    textBackgroundOpacity,
+    setTextBackgroundOpacity,
+    textBackgroundBlur,
+    setTextBackgroundBlur,
+    isMagicColorMode,
+    setIsMagicColorMode,
+    magicColor,
+    setMagicColor,
+    updateMagicColor,
     isCropping,
     handleApplyCrop,
     handleDownload,
@@ -48,8 +63,17 @@ function Controls() {
     previewImage,
     isGeneratingPreview,
     handleGeneratePreview,
-    handleClearPreview,
+    resetToDefaults,
   } = useCover();
+
+  // 处理宽高比变更的函数
+  const handleAspectChange = (newAspect: number) => {
+    setAspect(newAspect);
+    // 如果已经完成剪裁，自动触发重新剪裁
+    if (!isCropping) {
+      setIsCropping(true);
+    }
+  };
 
   return (
     <div className="controls-wrapper">
@@ -63,13 +87,45 @@ function Controls() {
 
         <div className="control-group">
           <label>宽高比</label>
-          <div className="aspect-ratio-buttons">
-            <button onClick={() => setAspect(ASPECT_RATIOS.RATIO_16_9)} className={Math.abs(aspect - ASPECT_RATIOS.RATIO_16_9) < 0.001 ? 'active' : ''}>16:9</button>
-            <button onClick={() => setAspect(ASPECT_RATIOS.RATIO_9_16)} className={Math.abs(aspect - ASPECT_RATIOS.RATIO_9_16) < 0.001 ? 'active' : ''}>9:16</button>
-            <button onClick={() => setAspect(ASPECT_RATIOS.RATIO_4_3)} className={Math.abs(aspect - ASPECT_RATIOS.RATIO_4_3) < 0.001 ? 'active' : ''}>4:3</button>
-            <button onClick={() => setAspect(ASPECT_RATIOS.RATIO_3_4)} className={Math.abs(aspect - ASPECT_RATIOS.RATIO_3_4) < 0.001 ? 'active' : ''}>3:4</button>
-            <button onClick={() => setAspect(ASPECT_RATIOS.RATIO_1_1)} className={Math.abs(aspect - ASPECT_RATIOS.RATIO_1_1) < 0.001 ? 'active' : ''}>1:1</button>
+          
+          <div className="aspect-ratio-group">
+            <div className="aspect-ratio-label">📱竖屏</div>
+            <div className="aspect-ratio-buttons">
+              <button onClick={() => handleAspectChange(ASPECT_RATIOS.RATIO_9_16)} className={Math.abs(aspect - ASPECT_RATIOS.RATIO_9_16) < 0.001 ? 'active' : ''}>🎵 9:16</button>
+              <button onClick={() => handleAspectChange(ASPECT_RATIOS.RATIO_3_4)} className={Math.abs(aspect - ASPECT_RATIOS.RATIO_3_4) < 0.001 ? 'active' : ''}>🍠 3:4</button>
+            </div>
           </div>
+          
+          <div className="aspect-ratio-group">
+            <div className="aspect-ratio-label">💻横屏</div>
+            <div className="aspect-ratio-buttons">
+              <button onClick={() => handleAspectChange(ASPECT_RATIOS.RATIO_16_9)} className={Math.abs(aspect - ASPECT_RATIOS.RATIO_16_9) < 0.001 ? 'active' : ''}>16:9</button>
+              <button onClick={() => handleAspectChange(ASPECT_RATIOS.RATIO_4_3)} className={Math.abs(aspect - ASPECT_RATIOS.RATIO_4_3) < 0.001 ? 'active' : ''}>4:3</button>
+            </div>
+          </div>
+
+          <div className="aspect-ratio-group">
+            <div className="aspect-ratio-label">正方形</div>
+            <div className="aspect-ratio-buttons">
+              <button onClick={() => handleAspectChange(ASPECT_RATIOS.RATIO_1_1)} className={Math.abs(aspect - ASPECT_RATIOS.RATIO_1_1) < 0.001 ? 'active' : ''}>1:1</button>
+            </div>
+          </div>
+
+          
+        </div>
+
+        <div className="control-group">
+          <label>缩放: {zoom.toFixed(2)}x</label>
+          <input
+            type="range"
+            min="1"
+            max="3"
+            step="0.1"
+            value={zoom}
+            onChange={(e) => setZoom(Number(e.target.value))}
+            className="slider"
+            disabled={!isCropping}
+          />
         </div>
 
         <div className="control-group">
@@ -181,6 +237,95 @@ function Controls() {
         </div>
 
         <div className="control-group">
+          <label>标题与内容间距: {titleContentSpacing}px</label>
+          <input
+            type="range"
+            min="0"
+            max="100"
+            value={titleContentSpacing}
+            onChange={(e) => setTitleContentSpacing(Number(e.target.value))}
+            className="slider"
+          />
+        </div>
+
+        <div className="control-group">
+          <label>
+            <input
+              type="checkbox"
+              checked={textBackgroundEnabled}
+              onChange={(e) => setTextBackgroundEnabled(e.target.checked)}
+              style={{ marginRight: '8px' }}
+            />
+            启用文字背景
+          </label>
+        </div>
+
+        {textBackgroundEnabled && (
+          <>
+            <div className="control-group">
+              <label>背景颜色</label>
+              <div className="color-control-container">
+                <div className="color-mode-buttons">
+                  <button 
+                    className={`color-mode-btn ${!isMagicColorMode ? 'active' : ''}`}
+                    onClick={() => setIsMagicColorMode(false)}
+                  >
+                    自定义
+                  </button>
+                  <button 
+                    className={`color-mode-btn ${isMagicColorMode ? 'active' : ''}`}
+                    onClick={() => {
+                      setIsMagicColorMode(true);
+                      updateMagicColor();
+                    }}
+                  >
+                    ✨魔法色
+                  </button>
+                </div>
+                <div className="color-picker-container">
+                  <input 
+                    type="color" 
+                    value={isMagicColorMode ? magicColor : textBackgroundColor} 
+                    onChange={(e) => {
+                      if (!isMagicColorMode) {
+                        setTextBackgroundColor(e.target.value);
+                      }
+                    }} 
+                    className="color-picker" 
+                    disabled={isMagicColorMode}
+                  />
+                  <span>{isMagicColorMode ? magicColor : textBackgroundColor}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="control-group">
+              <label>背景不透明度: {textBackgroundOpacity}%</label>
+              <input
+                type="range"
+                min="0"
+                max="100"
+                value={textBackgroundOpacity}
+                onChange={(e) => setTextBackgroundOpacity(Number(e.target.value))}
+                className="slider"
+              />
+            </div>
+
+            <div className="control-group">
+              <label>背景模糊: {textBackgroundBlur}px</label>
+              <input
+                type="range"
+                min="0"
+                max="30"
+                value={textBackgroundBlur}
+                onChange={(e) => setTextBackgroundBlur(Number(e.target.value))}
+                className="slider"
+              />
+            </div>
+          </>
+        )} 
+
+        <div className="control-group">
           <label>水平偏移: {textOffsetX}px</label>
           <input
             type="range"
@@ -205,20 +350,6 @@ function Controls() {
         </div>
 
         <div className="control-group">
-          <label>缩放: {zoom.toFixed(2)}x</label>
-          <input
-            type="range"
-            min="1"
-            max="3"
-            step="0.1"
-            value={zoom}
-            onChange={(e) => setZoom(Number(e.target.value))}
-            className="slider"
-            disabled={!isCropping}
-          />
-        </div>
-
-        <div className="control-group">
           <label>圆角: {borderRadius}px</label>
           <input
             type="range"
@@ -233,24 +364,19 @@ function Controls() {
 
       {/* 固定底部按钮区域 */}
       <div className="fixed-bottom-actions">
-        <div className="control-group-grid">
-          <button 
-            onClick={handleGeneratePreview}
-            disabled={isGeneratingPreview || !imageSrc || !completedCrop}
-            className="control-button preview-button"
-          >
-            {isGeneratingPreview ? '生成中...' : '生成预览'}
-          </button>
-          {previewImage && (
-            <button 
-              onClick={handleClearPreview}
-              className="control-button clear-preview-button"
-            >
-              清除预览
-            </button>
-          )}
-        </div>
+        <button 
+          onClick={handleGeneratePreview}
+          disabled={isGeneratingPreview || !imageSrc || !completedCrop}
+          className="control-button preview-button"
+          style={{ width: '100%', marginBottom: '1rem' }}
+        >
+          {isGeneratingPreview ? '生成中...' : '生成预览'}
+        </button>
         
+        <button onClick={resetToDefaults} className="control-button reset-button">
+          恢复默认
+        </button>
+
         <button onClick={handleDownload} className="control-button download-button">
           下载封面
         </button>
