@@ -159,9 +159,11 @@ export async function getFinalImage(
     titleY = padding + titleFontSize;
     contentY = titleY + titleContentSpacing;
   } else if (textVAlign === 'bottom') {
-    // This is a rough estimation, can be improved
-    contentY = canvas.height - padding - contentFontSize;
-    titleY = contentY - titleContentSpacing - titleFontSize;
+    // 计算总文字高度，然后从底部向上排列
+    const totalTextHeight = titleFontSize + titleContentSpacing + contentFontSize;
+    const startY = canvas.height - padding - totalTextHeight;
+    titleY = startY + titleFontSize;
+    contentY = titleY + titleContentSpacing;
   } else { // center
     const totalTextHeight = titleFontSize + titleContentSpacing + contentFontSize;
     const startY = (canvas.height - totalTextHeight) / 2;
@@ -197,34 +199,69 @@ export async function getFinalImage(
     ctx.font = contentFont;
     const contentMetrics = ctx.measureText(content);
     
-    // Calculate background dimensions - 延伸到整个画布宽度
+    // Calculate background dimensions and position based on text alignment
     const backgroundPadding = 20;
-    const backgroundWidth = canvas.width; // 使用整个画布宽度
-    const backgroundHeight = titleFontSize + titleContentSpacing + contentFontSize + backgroundPadding * 2;
+    let backgroundX, backgroundY, backgroundWidth, backgroundHeight;
     
-    // Calculate background position - 从画布左边开始
-    const backgroundX = 0; // 从画布左边开始
-    const backgroundY = titleY - titleFontSize - backgroundPadding;
+    // 背景始终与图片边缘对齐
+    backgroundX = 0;
+    backgroundWidth = canvas.width;
     
-    // Draw background with opacity and blur effect
+    if (textVAlign === 'top') {
+      // 文字在顶部时，背景从图片顶部延伸到文字区域结束
+      backgroundY = 0;
+      const textEndY = contentY + contentFontSize + backgroundPadding;
+      backgroundHeight = textEndY;
+    } else if (textVAlign === 'bottom') {
+      // 文字在底部时，背景从文字开始位置延伸到图片底部
+      backgroundY = titleY - titleFontSize - backgroundPadding;
+      backgroundHeight = canvas.height - backgroundY;
+    } else {
+      // 文字在中间时，围绕文字
+      backgroundX = titleX - Math.max(titleMetrics.width, contentMetrics.width) / 2 - backgroundPadding;
+      backgroundY = titleY - titleFontSize - backgroundPadding;
+      backgroundWidth = Math.max(titleMetrics.width, contentMetrics.width) + backgroundPadding * 2;
+      backgroundHeight = titleFontSize + titleContentSpacing + contentFontSize + backgroundPadding * 2;
+    }
+    
+    // Draw background with integrated blur effect
     const opacity = textBackgroundOpacity / 100;
     const hexColor = isMagicColorMode ? magicColor : textBackgroundColor;
     const r = parseInt(hexColor.slice(1, 3), 16);
     const g = parseInt(hexColor.slice(3, 5), 16);
     const b = parseInt(hexColor.slice(5, 7), 16);
     
-    ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${opacity})`;
+    ctx.save();
     
-    // Apply blur effect if specified
-    if (textBackgroundBlur > 0) {
-      ctx.filter = `blur(${textBackgroundBlur}px)`;
+    if (textVAlign === 'center') {
+      // 中心对齐时，使用简单的背景和模糊
+      ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${opacity})`;
+      ctx.beginPath();
+      roundRect(ctx, backgroundX, backgroundY, backgroundWidth, backgroundHeight, 8);
+      ctx.fill();
+      
+      // 如果有模糊效果，在背景周围添加模糊边缘
+      if (textBackgroundBlur > 0) {
+        ctx.filter = `blur(${textBackgroundBlur}px)`;
+        ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${opacity * 0.3})`;
+        ctx.beginPath();
+        roundRect(ctx, backgroundX - textBackgroundBlur, backgroundY - textBackgroundBlur, 
+                  backgroundWidth + textBackgroundBlur * 2, backgroundHeight + textBackgroundBlur * 2, 8);
+        ctx.fill();
+      }
+    } else {
+      // 顶部或底部对齐时，使用渐变背景
+      const gradient = ctx.createLinearGradient(0, backgroundY, 0, backgroundY + backgroundHeight);
+      
+             // 简化背景：顶部和底部都使用实心背景，不添加渐变效果
+       gradient.addColorStop(0, `rgba(${r}, ${g}, ${b}, ${opacity})`);
+       gradient.addColorStop(1, `rgba(${r}, ${g}, ${b}, ${opacity})`);
+      
+             ctx.fillStyle = gradient;
+       ctx.fillRect(backgroundX, backgroundY, backgroundWidth, backgroundHeight);
     }
     
-    // Draw rounded rectangle background
-    ctx.beginPath();
-    const bgRadius = 8;
-    roundRect(ctx, backgroundX, backgroundY, backgroundWidth, backgroundHeight, bgRadius);
-    ctx.fill();
+    ctx.restore();
     
     ctx.restore(); // Reset filter and other styles
   }

@@ -404,20 +404,58 @@ const Canvas = React.forwardRef<HTMLDivElement>((_, ref) => {
                       <div className="text-control-content" style={{ position: 'relative' }}>
                         {/* 文字背景层 */}
                         {textBackgroundEnabled && (
-                          <div 
-                            className="text-background"
-                            style={{
-                              position: 'absolute',
-                              top: -10,
-                              left: '-50vw',
-                              right: '-50vw',
-                              height: `${titleSize + titleContentSpacing + contentSize + 20}px`,
-                              backgroundColor: `${isMagicColorMode ? magicColor : textBackgroundColor}${Math.round(textBackgroundOpacity * 2.55).toString(16).padStart(2, '0')}`,
-                              backdropFilter: `blur(${textBackgroundBlur}px)`,
-                              borderRadius: '0px',
-                              zIndex: -1,
-                            }}
-                          />
+                          <>
+                            {textVAlign === 'center' ? (
+                              // 中心对齐时，使用简单的背景
+                              <>
+                                <div 
+                                  className="text-background-main"
+                                  style={{
+                                    position: 'absolute',
+                                    top: -10,
+                                    left: -10,
+                                    right: -10,
+                                    height: `${titleSize + titleContentSpacing + contentSize + 20}px`,
+                                    backgroundColor: `${isMagicColorMode ? magicColor : textBackgroundColor}${Math.round(textBackgroundOpacity * 2.55).toString(16).padStart(2, '0')}`,
+                                    borderRadius: '8px',
+                                    zIndex: -1,
+                                  }}
+                                />
+                                {textBackgroundBlur > 0 && (
+                                  <div 
+                                    className="text-background-blur"
+                                    style={{
+                                      position: 'absolute',
+                                      top: -10 - textBackgroundBlur,
+                                      left: -10 - textBackgroundBlur,
+                                      right: -10 - textBackgroundBlur,
+                                      height: `${titleSize + titleContentSpacing + contentSize + 20 + textBackgroundBlur * 2}px`,
+                                      backgroundColor: `${isMagicColorMode ? magicColor : textBackgroundColor}${Math.round(textBackgroundOpacity * 0.3 * 2.55).toString(16).padStart(2, '0')}`,
+                                      borderRadius: '8px',
+                                      backdropFilter: `blur(${textBackgroundBlur}px)`,
+                                      zIndex: -2,
+                                    }}
+                                  />
+                                )}
+                              </>
+                            ) : (
+                              // 顶部或底部对齐时，使用渐变背景
+                              <div 
+                                className="text-background-gradient"
+                                                                 style={{
+                                   position: 'absolute',
+                                   top: textVAlign === 'top' ? '0' : `-${titleSize + 20}px`,
+                                   left: '0',
+                                   right: '0',
+                                   bottom: textVAlign === 'bottom' ? '0' : 'auto',
+                                   height: textVAlign === 'top' ? `${titleSize + titleContentSpacing + contentSize + 40}px` : 'auto',
+                                   background: `${isMagicColorMode ? magicColor : textBackgroundColor}${Math.round(textBackgroundOpacity * 2.55).toString(16).padStart(2, '0')}`,
+                                   backdropFilter: textBackgroundBlur > 0 ? `blur(${textBackgroundBlur}px)` : 'none',
+                                   zIndex: -1,
+                                 }}
+                              />
+                            )}
+                          </>
                         )}
                         
                         <div 

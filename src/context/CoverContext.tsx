@@ -95,10 +95,10 @@ export const CoverProvider: React.FC<CoverProviderProps> = ({ children }) => {
     const [imageSrc, setImageSrc] = useState<string | null>(null);
     const [title, setTitle] = useState<string>('这里是标题');
     const [content, setContent] = useState<string>('这里是正文内容，可以根据需要修改。');
-    const [aspect, setAspect] = useState<number>(16 / 9);
+    const [aspect, setAspect] = useState<number>(3 / 4);
     const [borderRadius, setBorderRadius] = useState<number>(50);
     const [textColor, setTextColor] = useState<string>('#ffffff');
-    const [textVAlign, setTextVAlign] = useState<VAlign>('center'); // Corrected 'middle' to 'center'
+    const [textVAlign, setTextVAlign] = useState<VAlign>('bottom');
     // 添加文字大小状态
     const [titleSize, setTitleSize] = useState<number>(80);
     const [contentSize, setContentSize] = useState<number>(38);
@@ -109,12 +109,12 @@ export const CoverProvider: React.FC<CoverProviderProps> = ({ children }) => {
     // 添加标题和内容间距状态
     const [titleContentSpacing, setTitleContentSpacing] = useState<number>(66);
     // 添加文字背景状态
-    const [textBackgroundEnabled, setTextBackgroundEnabled] = useState<boolean>(false);
+    const [textBackgroundEnabled, setTextBackgroundEnabled] = useState<boolean>(true);
     const [textBackgroundColor, setTextBackgroundColor] = useState<string>('#000000');
     const [textBackgroundOpacity, setTextBackgroundOpacity] = useState<number>(50);
     const [textBackgroundBlur, setTextBackgroundBlur] = useState<number>(10);
     // 添加魔法色状态
-    const [isMagicColorMode, setIsMagicColorMode] = useState<boolean>(false);
+    const [isMagicColorMode, setIsMagicColorMode] = useState<boolean>(true);
     const [magicColor, setMagicColor] = useState<string>('#333333');
     const [crop, setCrop] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
     const [zoom, setZoom] = useState<number>(1);
@@ -236,6 +236,8 @@ export const CoverProvider: React.FC<CoverProviderProps> = ({ children }) => {
         textBackgroundColor,
         textBackgroundOpacity,
         textBackgroundBlur,
+        isMagicColorMode,
+        magicColor,
         previewImage,
     ]);
 
@@ -251,21 +253,21 @@ export const CoverProvider: React.FC<CoverProviderProps> = ({ children }) => {
     const resetToDefaults = useCallback(() => {
         setTitle('这里是标题');
         setContent('这里是正文内容，可以根据需要修改。');
-        setAspect(16 / 9);
+        setAspect(3 / 4);
         setBorderRadius(50);
         setTextColor('#ffffff');
-        setTextVAlign('center');
+        setTextVAlign('bottom');
         setTitleSize(80);
         setContentSize(38);
         setTextHAlign('center');
         setTextOffsetX(0);
         setTextOffsetY(0);
         setTitleContentSpacing(66);
-        setTextBackgroundEnabled(false);
+        setTextBackgroundEnabled(true);
         setTextBackgroundColor('#000000');
         setTextBackgroundOpacity(50);
         setTextBackgroundBlur(10);
-        setIsMagicColorMode(false);
+        setIsMagicColorMode(true);
         setMagicColor('#333333');
         setZoom(1);
     }, []);
