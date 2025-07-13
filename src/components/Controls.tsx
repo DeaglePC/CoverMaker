@@ -134,7 +134,12 @@ function Controls() {
 
         <div className="control-group">
           <label>内容</label>
-          <textarea value={content} onChange={(e) => setContent(e.target.value)} />
+          <textarea 
+            value={content} 
+            onChange={(e) => setContent(e.target.value)} 
+            placeholder="支持换行，按Enter键换行"
+            rows={3}
+          />
         </div>
 
         <div className="control-group">
