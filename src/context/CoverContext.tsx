@@ -1,9 +1,11 @@
 import React, { createContext, useState, useRef, useContext, useCallback, ReactNode } from 'react';
 import { Area } from 'react-easy-crop';
 // 导入新的类型
-import { getFinalImage, DrawOptions } from '../utils/cropImage';
+import { getFinalImage } from '../utils/cropImage';
 // 导入魔法色工具函数
 import { getMagicBackgroundColor } from '../utils/colorExtractor';
+// 导入字体工具函数
+import { getAvailableFonts } from '../utils/fontUtils';
 
 type VAlign = 'top' | 'center' | 'bottom';
 
@@ -30,10 +32,10 @@ interface CoverContextType {
     // 添加文字位置控制
     textHAlign: 'left' | 'center' | 'right';
     setTextHAlign: (align: 'left' | 'center' | 'right') => void;
-    textOffsetX: number;
-    setTextOffsetX: (offset: number) => void;
-    textOffsetY: number;
-    setTextOffsetY: (offset: number) => void;
+    // 添加字体控制
+    fontFamily: string;
+    setFontFamily: (font: string) => void;
+    availableFonts: Array<{ name: string; value: string }>;
     // 添加标题和内容间距控制
     titleContentSpacing: number;
     setTitleContentSpacing: (spacing: number) => void;
@@ -50,6 +52,11 @@ interface CoverContextType {
     magicColor: string;
     setMagicColor: (color: string) => void;
     updateMagicColor: () => Promise<void>;
+    // 添加文字位置偏移控制
+    textOffsetX: number;
+    setTextOffsetX: (offsetX: number) => void;
+    textOffsetY: number;
+    setTextOffsetY: (offsetY: number) => void;
     crop: { x: number; y: number };
     setCrop: (crop: { x: number; y: number }) => void;
     zoom: number;
@@ -102,8 +109,9 @@ export const CoverProvider: React.FC<CoverProviderProps> = ({ children }) => {
     const [contentSize, setContentSize] = useState<number>(38);
     // 添加文字位置状态
     const [textHAlign, setTextHAlign] = useState<'left' | 'center' | 'right'>('center');
-    const [textOffsetX, setTextOffsetX] = useState<number>(0);
-    const [textOffsetY, setTextOffsetY] = useState<number>(0);
+    // 添加字体状态
+    const [fontFamily, setFontFamily] = useState<string>('Microsoft YaHei, sans-serif');
+    const [availableFonts] = useState(getAvailableFonts());
     // 添加标题和内容间距状态
     const [titleContentSpacing, setTitleContentSpacing] = useState<number>(80);
     // 添加文字背景状态
@@ -113,6 +121,9 @@ export const CoverProvider: React.FC<CoverProviderProps> = ({ children }) => {
     // 添加魔法色状态
     const [isMagicColorMode, setIsMagicColorMode] = useState<boolean>(true);
     const [magicColor, setMagicColor] = useState<string>('#333333');
+    // 添加文字位置偏移状态
+    const [textOffsetX, setTextOffsetX] = useState<number>(0);
+    const [textOffsetY, setTextOffsetY] = useState<number>(0);
     const [crop, setCrop] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
     const [zoom, setZoom] = useState<number>(1);
     const [completedCrop, setCompletedCrop] = useState<Area | null>(null);
@@ -193,6 +204,7 @@ export const CoverProvider: React.FC<CoverProviderProps> = ({ children }) => {
                 textHAlign,
                 textOffsetX,
                 textOffsetY,
+                fontFamily,
                 titleContentSpacing,
                 textBackgroundEnabled,
                 textBackgroundColor,
@@ -227,6 +239,7 @@ export const CoverProvider: React.FC<CoverProviderProps> = ({ children }) => {
         textHAlign,
         textOffsetX,
         textOffsetY,
+        fontFamily,
         titleContentSpacing,
         textBackgroundEnabled,
         textBackgroundColor,
@@ -248,36 +261,72 @@ export const CoverProvider: React.FC<CoverProviderProps> = ({ children }) => {
     const resetToDefaults = useCallback(async () => {
         setTitle('这里是标题');
         setContent('这里是正文内容，可以根据需要修改。');
-        setAspect(3 / 4);
-        setBorderRadius(50);
         setTextColor('#ffffff');
         setTextVAlign('bottom');
-        setTitleSize(80);
-        setContentSize(38);
         setTextHAlign('center');
-        setTextOffsetX(0);
-        setTextOffsetY(0);
-        setTitleContentSpacing(80);
+        setFontFamily('Microsoft YaHei, sans-serif');
+        setBorderRadius(50);
         setTextBackgroundEnabled(true);
         setTextBackgroundColor('#000000');
         setTextBackgroundOpacity(88);
         setIsMagicColorMode(true);
         setMagicColor('#333333');
-        setZoom(1);
+        setTextOffsetX(0);
+        setTextOffsetY(0);
         
-        // 自动更新魔法色
-        await updateMagicColor();
-    }, [updateMagicColor]);
+        // 智能字体大小和圆角：如果有裁剪后的图片尺寸，使用智能计算；否则使用固定默认值
+        if (croppedImageDimensions) {
+            const smartTitleSize = Math.round(croppedImageDimensions.width * 0.07);
+            const smartContentSize = Math.round(croppedImageDimensions.width * 0.05);
+            
+            // 设置合理的字体大小范围（根据图片宽度动态计算最大值）
+            const minTitleSize = 12;
+            const maxTitleSize = Math.round(croppedImageDimensions.width * 0.3);
+            const minContentSize = 8;
+            const maxContentSize = Math.round(croppedImageDimensions.width * 0.3);
+            
+            // 应用智能字体大小，但限制在合理范围内
+            const finalTitleSize = Math.max(minTitleSize, Math.min(maxTitleSize, smartTitleSize));
+            setTitleSize(finalTitleSize);
+            setContentSize(Math.max(minContentSize, Math.min(maxContentSize, smartContentSize)));
+            
+            // 间距大小与标题大小保持一致
+            setTitleContentSpacing(finalTitleSize);
+            
+            // 根据裁剪后的图片宽度智能调整圆角
+            const smartBorderRadius = Math.round(croppedImageDimensions.width * 0.065);
+            const maxBorderRadius = Math.round(croppedImageDimensions.width * 0.25);
+            const finalBorderRadius = Math.min(smartBorderRadius, maxBorderRadius);
+            setBorderRadius(finalBorderRadius);
+        } else {
+            // 如果没有裁剪后的图片尺寸，使用固定默认值
+            setTitleSize(80);
+            setContentSize(38);
+            // 间距大小与标题大小保持一致
+            setTitleContentSpacing(80);
+            setBorderRadius(50);
+        }
+        
+        // 清理预览图片
+        handleClearPreview();
+        
+        // 如果有图片，重新触发魔法色更新
+        if (imageSrc) {
+            await updateMagicColor();
+        }
+        
+        // 重新生成预览
+        handleGeneratePreview();
+    }, [handleClearPreview, imageSrc, updateMagicColor, croppedImageDimensions, handleGeneratePreview]);
 
     const handleDownload = async () => {
-        if (!completedCrop || !imageSrc) {
-            alert('请先上传图片并完成裁剪。');
-            console.error("Cannot download, crop details or image source not set.");
+        if (!imageSrc || !completedCrop) {
+            alert('请先上传图片并完成裁剪');
             return;
         }
 
         try {
-            const options: DrawOptions = {
+            const finalImage = await getFinalImage({
                 imageSrc,
                 pixelCrop: completedCrop,
                 title,
@@ -290,134 +339,195 @@ export const CoverProvider: React.FC<CoverProviderProps> = ({ children }) => {
                 textHAlign,
                 textOffsetX,
                 textOffsetY,
+                fontFamily,
                 titleContentSpacing,
                 textBackgroundEnabled,
                 textBackgroundColor,
                 textBackgroundOpacity,
                 isMagicColorMode,
                 magicColor,
-            };
+            });
             
-            const imageBlobUrl = await getFinalImage(options);
-
-            if (imageBlobUrl) {
+            if (finalImage) {
                 const link = document.createElement('a');
-                link.download = 'cover.png';
-                link.href = imageBlobUrl.url; // 使用 .url 属性
-                document.body.appendChild(link);
+                link.download = `cover_${new Date().toISOString().slice(0, 10)}.png`;
+                link.href = finalImage.url;
                 link.click();
-                document.body.removeChild(link);
-                URL.revokeObjectURL(imageBlobUrl.url); // 清理 blob URL
             }
-        } catch (e) {
-            console.error('下载图片时出错:', e);
-            alert('生成图片失败，请查看控制台获取更多信息。');
+        } catch (error) {
+            console.error('下载图片失败:', error);
+            alert('下载失败，请重试');
         }
     };
 
     const handleApplyCrop = async () => {
-        if (!completedCrop || !imageSrc) {
-            console.error("Crop details or image source not set.");
+        if (!imageSrc || !completedCrop) {
+            alert('请先上传图片并完成裁剪');
             return;
         }
-        try {
-            // 修复: 在生成预览图时，传递真实的圆角值，而不是0。
-            // 这样生成的预览图本身就是带圆角的。
-            // 文字部分仍然留空，因为它们是通过DOM在预览图上层实时叠加的。
-            const croppedImgResult = await getFinalImage({ 
-                imageSrc, 
-                pixelCrop: completedCrop, 
-                title: '', 
-                content: '', 
-                textColor: '', 
-                textVAlign: 'center', 
-                // 为预览图强制使用0圆角，因为圆角效果将由CSS在前端处理
-                borderRadius: 0,
-                titleContentSpacing: 0,
-                textBackgroundEnabled: false,
-                textBackgroundColor: '#000000',
-                textBackgroundOpacity: 0,
-            });
 
-            if (croppedImgResult) {
-                setCroppedImage(croppedImgResult.url);
-                setCroppedImageDimensions({ width: croppedImgResult.width, height: croppedImgResult.height });
-            }
-            setIsCropping(false);
+        try {
+            const finalImage = await getFinalImage({
+                imageSrc,
+                pixelCrop: completedCrop,
+                title: '',
+                content: '',
+                textColor,
+                textVAlign,
+                borderRadius,
+                titleSize,
+                contentSize,
+                textHAlign,
+                textOffsetX,
+                textOffsetY,
+                fontFamily,
+                titleContentSpacing,
+                textBackgroundEnabled,
+                textBackgroundColor,
+                textBackgroundOpacity,
+                isMagicColorMode,
+                magicColor,
+            });
             
-            // 应用裁剪后自动生成预览
-            handleGeneratePreview();
-        } catch (e) {
-            console.error("handleApplyCrop 出错:", e);
+            if (finalImage) {
+                setCroppedImage(finalImage.url);
+                setCroppedImageDimensions({ width: finalImage.width, height: finalImage.height });
+                setIsCropping(false);
+                
+                // 根据裁剪后的图片宽度智能调整字体大小
+                const smartTitleSize = Math.round(finalImage.width * 0.07);
+                const smartContentSize = Math.round(finalImage.width * 0.04);
+                
+                // 设置合理的字体大小范围（根据图片宽度动态计算最大值）
+                const minTitleSize = 12;
+                const maxTitleSize = Math.round(finalImage.width * 0.3);
+                const minContentSize = 8;
+                const maxContentSize = Math.round(finalImage.width * 0.3);
+                
+                // 应用智能字体大小，但限制在合理范围内
+                const finalTitleSize = Math.max(minTitleSize, Math.min(maxTitleSize, smartTitleSize));
+                const finalContentSize = Math.max(minContentSize, Math.min(maxContentSize, smartContentSize));
+                
+                setTitleSize(finalTitleSize);
+                setContentSize(finalContentSize);
+                
+                // 间距大小与标题大小保持一致
+                setTitleContentSpacing(finalTitleSize);
+                
+                // 根据裁剪后的图片宽度智能调整圆角
+                const smartBorderRadius = Math.round(finalImage.width * 0.065);
+                const maxBorderRadius = Math.round(finalImage.width * 0.25);
+                const finalBorderRadius = Math.min(smartBorderRadius, maxBorderRadius);
+                setBorderRadius(finalBorderRadius);
+                
+                // 应用裁剪后自动生成预览，使用新计算的字体大小
+                try {
+                    setIsGeneratingPreview(true);
+                    const newPreviewImage = await getFinalImage({
+                        imageSrc,
+                        pixelCrop: completedCrop,
+                        title,
+                        content,
+                        textColor,
+                        textVAlign,
+                        borderRadius,
+                        titleSize: finalTitleSize,
+                        contentSize: finalContentSize,
+                        textHAlign,
+                        textOffsetX,
+                        textOffsetY,
+                        fontFamily,
+                        titleContentSpacing: finalTitleSize,
+                        textBackgroundEnabled,
+                        textBackgroundColor,
+                        textBackgroundOpacity,
+                        isMagicColorMode,
+                        magicColor,
+                    });
+                    
+                    if (newPreviewImage) {
+                        // 清理之前的预览图片URL
+                        if (previewImage) {
+                            URL.revokeObjectURL(previewImage);
+                        }
+                        setPreviewImage(newPreviewImage.url);
+                    }
+                } catch (previewError) {
+                    console.error('生成预览图片失败:', previewError);
+                } finally {
+                    setIsGeneratingPreview(false);
+                }
+            }
+        } catch (error) {
+            console.error('应用裁剪失败:', error);
+            alert('应用裁剪失败，请重试');
         }
-    };
-    
-    const value = {
-        imageSrc,
-        setImageSrc,
-        title,
-        setTitle,
-        content,
-        setContent,
-        aspect,
-        setAspect,
-        borderRadius,
-        setBorderRadius,
-        textColor,
-        setTextColor,
-        textVAlign,
-        setTextVAlign,
-        // 添加文字大小和位置控制
-        titleSize,
-        setTitleSize,
-        contentSize,
-        setContentSize,
-        textHAlign,
-        setTextHAlign,
-        textOffsetX,
-        setTextOffsetX,
-        textOffsetY,
-        setTextOffsetY,
-        // 添加标题和内容间距控制
-        titleContentSpacing,
-        setTitleContentSpacing,
-        // 添加文字背景控制
-        textBackgroundEnabled,
-        setTextBackgroundEnabled,
-        textBackgroundColor,
-        setTextBackgroundColor,
-        textBackgroundOpacity,
-        setTextBackgroundOpacity,
-        // 添加魔法色控制
-        isMagicColorMode,
-        setIsMagicColorMode,
-        magicColor,
-        setMagicColor,
-        updateMagicColor,
-        crop,
-        setCrop,
-        zoom,
-        setZoom,
-        completedCrop,
-        isCropping,
-        setIsCropping,
-        croppedImage,
-        croppedImageDimensions, // 传递新的 state
-        // 添加预览相关状态和函数
-        previewImage,
-        isGeneratingPreview,
-        previewContainerRef,
-        onCropComplete,
-        handleImageUpload,
-        handleDownload,
-        handleApplyCrop,
-        handleGeneratePreview,
-        handleClearPreview,
-        resetToDefaults, // 添加恢复默认值函数
     };
 
     return (
-        <CoverContext.Provider value={value}>
+        <CoverContext.Provider
+            value={{
+                imageSrc,
+                setImageSrc,
+                title,
+                setTitle,
+                content,
+                setContent,
+                aspect,
+                setAspect,
+                borderRadius,
+                setBorderRadius,
+                textColor,
+                setTextColor,
+                textVAlign,
+                setTextVAlign,
+                titleSize,
+                setTitleSize,
+                contentSize,
+                setContentSize,
+                textHAlign,
+                setTextHAlign,
+                fontFamily,
+                setFontFamily,
+                availableFonts,
+                titleContentSpacing,
+                setTitleContentSpacing,
+                textBackgroundEnabled,
+                setTextBackgroundEnabled,
+                textBackgroundColor,
+                setTextBackgroundColor,
+                textBackgroundOpacity,
+                setTextBackgroundOpacity,
+                isMagicColorMode,
+                setIsMagicColorMode,
+                magicColor,
+                setMagicColor,
+                updateMagicColor,
+                textOffsetX,
+                setTextOffsetX,
+                textOffsetY,
+                setTextOffsetY,
+                crop,
+                setCrop,
+                zoom,
+                setZoom,
+                completedCrop,
+                isCropping,
+                setIsCropping,
+                croppedImage,
+                croppedImageDimensions,
+                previewImage,
+                isGeneratingPreview,
+                previewContainerRef,
+                onCropComplete,
+                handleImageUpload,
+                handleDownload,
+                handleApplyCrop,
+                handleGeneratePreview,
+                handleClearPreview,
+                resetToDefaults,
+            }}
+        >
             {children}
         </CoverContext.Provider>
     );

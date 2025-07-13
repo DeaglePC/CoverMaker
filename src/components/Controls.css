@@ -124,7 +124,8 @@
 }
 
 .control-group input[type="text"],
-.control-group textarea {
+.control-group textarea,
+.control-group select {
   width: 100%;
   padding: 8px 12px;
   border: 1px solid #ced4da;
@@ -136,7 +137,8 @@
 }
 
 .control-group input[type="text"]:focus,
-.control-group textarea:focus {
+.control-group textarea:focus,
+.control-group select:focus {
   outline: none;
   border-color: #86b7fe;
   box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.2);
@@ -145,6 +147,16 @@
 .control-group textarea {
   min-height: 80px;
   resize: vertical;
+}
+
+/* 字体选择器样式 */
+.font-selector {
+  cursor: pointer;
+}
+
+.font-selector option {
+  padding: 8px;
+  font-size: 0.9rem;
 }
 
 /* 复选框样式 */

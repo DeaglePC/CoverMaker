@@ -25,6 +25,8 @@ export interface DrawOptions {
   textHAlign?: 'left' | 'center' | 'right';
   textOffsetX?: number;
   textOffsetY?: number;
+  // 添加字体控制
+  fontFamily?: string;
   // 添加标题和内容间距控制
   titleContentSpacing?: number;
   // 添加文字背景控制
@@ -34,6 +36,143 @@ export interface DrawOptions {
   // 添加魔法色控制
   isMagicColorMode?: boolean;
   magicColor?: string;
+}
+
+/**
+ * 测量多行文字的尺寸（不实际绘制）
+ * @param {CanvasRenderingContext2D} ctx - Canvas渲染上下文
+ * @param {string} text - 要测量的文本
+ * @param {number} maxWidth - 最大宽度
+ * @param {number} lineHeight - 行高
+ * @returns {Object} 包含实际高度、行数和最大宽度的对象
+ */
+function measureMultilineText(
+  ctx: CanvasRenderingContext2D,
+  text: string,
+  maxWidth: number,
+  lineHeight: number
+): { height: number; lines: number; maxLineWidth: number } {
+  if (!text.trim()) {
+    return { height: 0, lines: 0, maxLineWidth: 0 };
+  }
+  
+  // 首先处理显式换行符
+  const paragraphs = text.split('\n');
+  let totalLines = 0;
+  let maxLineWidth = 0;
+  
+  for (const paragraph of paragraphs) {
+    if (!paragraph.trim()) {
+      // 空行
+      totalLines++;
+      continue;
+    }
+    
+    // 自动换行处理
+    const words = paragraph.split(' ');
+    let currentLine = '';
+    
+    for (const word of words) {
+      const testLine = currentLine ? `${currentLine} ${word}` : word;
+      const metrics = ctx.measureText(testLine);
+      
+      if (metrics.width > maxWidth && currentLine) {
+        // 当前行超宽，记录当前行宽度
+        maxLineWidth = Math.max(maxLineWidth, ctx.measureText(currentLine).width);
+        currentLine = word;
+        totalLines++;
+      } else {
+        currentLine = testLine;
+      }
+    }
+    
+    // 记录最后一行宽度
+    if (currentLine) {
+      maxLineWidth = Math.max(maxLineWidth, ctx.measureText(currentLine).width);
+      totalLines++;
+    }
+  }
+  
+  return {
+    height: totalLines * lineHeight,
+    lines: totalLines,
+    maxLineWidth: maxLineWidth
+  };
+}
+
+/**
+ * 支持换行的文字渲染函数
+ * @param {CanvasRenderingContext2D} ctx - Canvas渲染上下文
+ * @param {string} text - 要渲染的文本
+ * @param {number} x - X坐标
+ * @param {number} y - Y坐标（第一行文字的基线）
+ * @param {number} maxWidth - 最大宽度
+ * @param {number} lineHeight - 行高
+ * @param {string} textAlign - 文字对齐方式
+ * @returns {Object} 包含实际渲染高度和行数的对象
+ */
+function drawMultilineText(
+  ctx: CanvasRenderingContext2D,
+  text: string,
+  x: number,
+  y: number,
+  maxWidth: number,
+  lineHeight: number,
+  textAlign: 'left' | 'center' | 'right' = 'center'
+): { height: number; lines: number } {
+  if (!text.trim()) {
+    return { height: 0, lines: 0 };
+  }
+  
+  const originalTextAlign = ctx.textAlign;
+  ctx.textAlign = textAlign;
+  
+  // 首先处理显式换行符
+  const paragraphs = text.split('\n');
+  let currentY = y;
+  let totalLines = 0;
+  
+  for (const paragraph of paragraphs) {
+    if (!paragraph.trim()) {
+      // 空行
+      currentY += lineHeight;
+      totalLines++;
+      continue;
+    }
+    
+    // 自动换行处理
+    const words = paragraph.split(' ');
+    let currentLine = '';
+    
+    for (const word of words) {
+      const testLine = currentLine ? `${currentLine} ${word}` : word;
+      const metrics = ctx.measureText(testLine);
+      
+      if (metrics.width > maxWidth && currentLine) {
+        // 当前行超宽，先绘制当前行
+        ctx.fillText(currentLine, x, currentY);
+        currentLine = word;
+        currentY += lineHeight;
+        totalLines++;
+      } else {
+        currentLine = testLine;
+      }
+    }
+    
+    // 绘制最后一行
+    if (currentLine) {
+      ctx.fillText(currentLine, x, currentY);
+      currentY += lineHeight;
+      totalLines++;
+    }
+  }
+  
+  ctx.textAlign = originalTextAlign;
+  
+  return {
+    height: totalLines * lineHeight,
+    lines: totalLines
+  };
 }
 
 /**
@@ -156,6 +295,7 @@ export async function getFinalImage(
     textHAlign = 'center',
     textOffsetX = 0,
     textOffsetY = 0,
+    fontFamily = 'Microsoft YaHei, sans-serif',
     titleContentSpacing = 66,
     textBackgroundEnabled = false,
     textBackgroundColor = '#000000',
@@ -211,12 +351,18 @@ export async function getFinalImage(
   // Title styles - 使用动态字体大小
   const titleFontSize = titleSize;
   ctx.fillStyle = textColor;
-  ctx.font = `bold ${titleFontSize}px "Microsoft YaHei", sans-serif`;
+  ctx.font = `bold ${titleFontSize}px ${fontFamily}`;
   ctx.textAlign = textHAlign;
 
   // Content styles - 使用动态字体大小
   const contentFontSize = contentSize;
-  const contentFont = `${contentFontSize}px "Microsoft YaHei", sans-serif`;
+  const contentFont = `${contentFontSize}px ${fontFamily}`;
+  const contentLineHeight = contentFontSize * 1.2; // 行高为字体大小的1.2倍
+
+  // 预先计算内容的实际高度
+  ctx.font = contentFont;
+  const contentInfo = content ? measureMultilineText(ctx, content, maxWidth, contentLineHeight) : { height: 0, lines: 0, maxLineWidth: 0 };
+  const actualContentHeight = contentInfo.height;
 
   // Calculate text positions using dynamic spacing
   let titleY, contentY;
@@ -226,12 +372,14 @@ export async function getFinalImage(
     contentY = titleY + titleContentSpacing;
   } else if (textVAlign === 'bottom') {
     // 计算总文字高度，然后从底部向上排列
-    const totalTextHeight = titleFontSize + titleContentSpacing + contentFontSize;
-    const startY = canvas.height - padding - totalTextHeight;
+    // 底部对齐时使用更小的间距，让文字更贴近底部
+    const bottomPadding = padding * 0.18; // 使用更小的底部间距
+    const totalTextHeight = titleFontSize + titleContentSpacing + actualContentHeight;
+    const startY = canvas.height - bottomPadding - totalTextHeight;
     titleY = startY + titleFontSize;
     contentY = titleY + titleContentSpacing;
   } else { // center
-    const totalTextHeight = titleFontSize + titleContentSpacing + contentFontSize;
+    const totalTextHeight = titleFontSize + titleContentSpacing + actualContentHeight;
     const startY = (canvas.height - totalTextHeight) / 2;
     titleY = startY + titleFontSize;
     contentY = titleY + titleContentSpacing;
@@ -259,11 +407,12 @@ export async function getFinalImage(
     ctx.save();
     
     // Calculate text dimensions for background
-    ctx.font = `bold ${titleFontSize}px "Microsoft YaHei", sans-serif`;
+    ctx.font = `bold ${titleFontSize}px ${fontFamily}`;
     const titleMetrics = ctx.measureText(title);
     
     ctx.font = contentFont;
-    const contentMetrics = ctx.measureText(content);
+    // 使用已经计算好的最大行宽度
+    const maxContentWidth = contentInfo.maxLineWidth;
     
     // Calculate background dimensions and position based on text alignment
     const backgroundPadding = 20;
@@ -276,7 +425,7 @@ export async function getFinalImage(
     if (textVAlign === 'top') {
       // 文字在顶部时，背景从图片顶部延伸到文字区域结束
       backgroundY = 0;
-      const textEndY = contentY + contentFontSize + backgroundPadding;
+      const textEndY = contentY + actualContentHeight + backgroundPadding;
       backgroundHeight = textEndY;
     } else if (textVAlign === 'bottom') {
       // 文字在底部时，背景从文字开始位置延伸到图片底部
@@ -284,10 +433,10 @@ export async function getFinalImage(
       backgroundHeight = canvas.height - backgroundY;
     } else {
       // 文字在中间时，围绕文字
-      backgroundX = titleX - Math.max(titleMetrics.width, contentMetrics.width) / 2 - backgroundPadding;
+      backgroundX = titleX - Math.max(titleMetrics.width, maxContentWidth) / 2 - backgroundPadding;
       backgroundY = titleY - titleFontSize - backgroundPadding;
-      backgroundWidth = Math.max(titleMetrics.width, contentMetrics.width) + backgroundPadding * 2;
-      backgroundHeight = titleFontSize + titleContentSpacing + contentFontSize + backgroundPadding * 2;
+      backgroundWidth = Math.max(titleMetrics.width, maxContentWidth) + backgroundPadding * 2;
+      backgroundHeight = titleFontSize + titleContentSpacing + actualContentHeight + backgroundPadding * 2;
     }
     
     // Draw background with integrated blur effect
@@ -340,11 +489,15 @@ export async function getFinalImage(
 
   // Draw title and content
   ctx.fillStyle = textColor;
-  ctx.font = `bold ${titleFontSize}px "Microsoft YaHei", sans-serif`;
-  ctx.fillText(title, titleX, titleY, maxWidth);
+  ctx.font = `bold ${titleFontSize}px ${fontFamily}`;
+  if (title) {
+    ctx.fillText(title, titleX, titleY, maxWidth);
+  }
   
   ctx.font = contentFont;
-  ctx.fillText(content, contentX, contentY, maxWidth);
+  if (content) {
+    drawMultilineText(ctx, content, contentX, contentY, maxWidth, contentLineHeight, textHAlign);
+  }
 
   // --- Export ---
   return new Promise((resolve) => {

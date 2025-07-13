@@ -1,6 +1,7 @@
 import './Controls.css';
 import { useCover } from '../context/CoverContext';
 import ImageUploader from './ImageUploader';
+import { getFontDisplayName } from '../utils/fontUtils';
 
 // 定义宽高比常量
 const ASPECT_RATIOS = {
@@ -34,10 +35,9 @@ function Controls() {
     setContentSize,
     textHAlign,
     setTextHAlign,
-    textOffsetX,
-    setTextOffsetX,
-    textOffsetY,
-    setTextOffsetY,
+    fontFamily,
+    setFontFamily,
+    availableFonts,
     titleContentSpacing,
     setTitleContentSpacing,
     textBackgroundEnabled,
@@ -48,8 +48,13 @@ function Controls() {
     setTextBackgroundOpacity,
     isMagicColorMode,
     setIsMagicColorMode,
+    textOffsetX,
+    setTextOffsetX,
+    textOffsetY,
+    setTextOffsetY,
     magicColor,
     updateMagicColor,
+    croppedImageDimensions,
     isCropping,
     handleApplyCrop,
     handleDownload,
@@ -106,8 +111,6 @@ function Controls() {
               <button onClick={() => handleAspectChange(ASPECT_RATIOS.RATIO_1_1)} className={Math.abs(aspect - ASPECT_RATIOS.RATIO_1_1) < 0.001 ? 'active' : ''}>1:1</button>
             </div>
           </div>
-
-          
         </div>
 
         <div className="control-group">
@@ -131,7 +134,12 @@ function Controls() {
 
         <div className="control-group">
           <label>内容</label>
-          <textarea value={content} onChange={(e) => setContent(e.target.value)} />
+          <textarea 
+            value={content} 
+            onChange={(e) => setContent(e.target.value)} 
+            placeholder="支持换行，按Enter键换行"
+            rows={3}
+          />
         </div>
 
         <div className="control-group">
@@ -143,31 +151,37 @@ function Controls() {
         </div>
 
         <div className="control-group">
+          <label>字体</label>
+          <select 
+            value={fontFamily} 
+            onChange={(e) => setFontFamily(e.target.value)}
+            className="font-selector"
+          >
+            {availableFonts.map((font) => (
+              <option key={font.value} value={font.value} style={{ fontFamily: font.value }}>
+                {font.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="control-group">
           <label>文字垂直位置</label>
           <div className="align-buttons">
             <button 
-              onClick={() => {
-                setTextVAlign('top');
-                setTextOffsetY(-50); // 顶部对齐时，设置向上偏移
-              }} 
+              onClick={() => setTextVAlign('top')} 
               className={textVAlign === 'top' ? 'active' : ''}
             >
               顶部
             </button>
             <button 
-              onClick={() => {
-                setTextVAlign('center');
-                setTextOffsetY(0); // 居中对齐时，重置垂直偏移
-              }} 
+              onClick={() => setTextVAlign('center')} 
               className={textVAlign === 'center' ? 'active' : ''}
             >
               居中
             </button>
             <button 
-              onClick={() => {
-                setTextVAlign('bottom');
-                setTextOffsetY(50); // 底部对齐时，设置向下偏移
-              }} 
+              onClick={() => setTextVAlign('bottom')} 
               className={textVAlign === 'bottom' ? 'active' : ''}
             >
               底部
@@ -179,28 +193,19 @@ function Controls() {
           <label>文字水平位置</label>
           <div className="align-buttons">
             <button 
-              onClick={() => {
-                setTextHAlign('left');
-                setTextOffsetX(-50); // 左对齐时，设置向左偏移
-              }} 
+              onClick={() => setTextHAlign('left')} 
               className={textHAlign === 'left' ? 'active' : ''}
             >
               左对齐
             </button>
             <button 
-              onClick={() => {
-                setTextHAlign('center');
-                setTextOffsetX(0); // 居中对齐时，重置水平偏移
-              }} 
+              onClick={() => setTextHAlign('center')} 
               className={textHAlign === 'center' ? 'active' : ''}
             >
               居中
             </button>
             <button 
-              onClick={() => {
-                setTextHAlign('right');
-                setTextOffsetX(50); // 右对齐时，设置向右偏移
-              }} 
+              onClick={() => setTextHAlign('right')} 
               className={textHAlign === 'right' ? 'active' : ''}
             >
               右对齐
@@ -209,43 +214,7 @@ function Controls() {
         </div>
 
         <div className="control-group">
-          <label>标题大小: {titleSize}px</label>
-          <input
-            type="range"
-            min="12"
-            max="300"
-            value={titleSize}
-            onChange={(e) => setTitleSize(Number(e.target.value))}
-            className="slider"
-          />
-        </div>
-
-        <div className="control-group">
-          <label>内容大小: {contentSize}px</label>
-          <input
-            type="range"
-            min="8"
-            max="200"
-            value={contentSize}
-            onChange={(e) => setContentSize(Number(e.target.value))}
-            className="slider"
-          />
-        </div>
-
-        <div className="control-group">
-          <label>标题与内容间距: {titleContentSpacing}px</label>
-          <input
-            type="range"
-            min="0"
-            max="100"
-            value={titleContentSpacing}
-            onChange={(e) => setTitleContentSpacing(Number(e.target.value))}
-            className="slider"
-          />
-        </div>
-
-        <div className="control-group">
-          <label>水平偏移: {textOffsetX}px</label>
+          <label>文字水平偏移: {textOffsetX}px</label>
           <input
             type="range"
             min="-200"
@@ -257,13 +226,49 @@ function Controls() {
         </div>
 
         <div className="control-group">
-          <label>垂直偏移: {textOffsetY}px</label>
+          <label>文字垂直偏移: {textOffsetY}px</label>
           <input
             type="range"
             min="-200"
             max="200"
             value={textOffsetY}
             onChange={(e) => setTextOffsetY(Number(e.target.value))}
+            className="slider"
+          />
+        </div>
+
+        <div className="control-group">
+          <label>标题大小: {titleSize}px</label>
+          <input
+            type="range"
+            min="12"
+            max={croppedImageDimensions ? Math.round(croppedImageDimensions.width * 0.3) : 300}
+            value={titleSize}
+            onChange={(e) => setTitleSize(Number(e.target.value))}
+            className="slider"
+          />
+        </div>
+
+        <div className="control-group">
+          <label>内容大小: {contentSize}px</label>
+          <input
+            type="range"
+            min="8"
+            max={croppedImageDimensions ? Math.round(croppedImageDimensions.width * 0.3) : 200}
+            value={contentSize}
+            onChange={(e) => setContentSize(Number(e.target.value))}
+            className="slider"
+          />
+        </div>
+
+        <div className="control-group">
+          <label>标题与内容间距: {titleContentSpacing}px</label>
+          <input
+            type="range"
+            min="0"
+            max={croppedImageDimensions ? Math.round(croppedImageDimensions.width * 0.3) : 300}
+            value={titleContentSpacing}
+            onChange={(e) => setTitleContentSpacing(Number(e.target.value))}
             className="slider"
           />
         </div>
@@ -340,7 +345,7 @@ function Controls() {
           <input
             type="range"
             min="0"
-            max="150"
+            max={croppedImageDimensions ? Math.round(croppedImageDimensions.width * 0.25) : 150}
             value={borderRadius}
             onChange={(e) => setBorderRadius(Number(e.target.value))}
             className="slider"
@@ -356,15 +361,15 @@ function Controls() {
           className="control-button preview-button"
           style={{ width: '100%', marginBottom: '1rem' }}
         >
-          {isGeneratingPreview ? '生成中...' : '生成预览'}
+          {isGeneratingPreview ? '⏳ 生成中...' : '🖼️ 生成预览'}
         </button>
         
         <button onClick={resetToDefaults} className="control-button reset-button">
-          恢复默认
+          🔄 恢复默认
         </button>
 
         <button onClick={handleDownload} className="control-button download-button">
-          下载封面
+          📥 下载封面
         </button>
       </div>
     </div>
