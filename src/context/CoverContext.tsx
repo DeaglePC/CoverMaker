@@ -1,7 +1,7 @@
 import React, { createContext, useState, useRef, useContext, useCallback, ReactNode } from 'react';
 import { Area } from 'react-easy-crop';
 // 导入新的类型
-import { getFinalImage, DrawOptions, FinalImage } from '../utils/cropImage';
+import { getFinalImage, DrawOptions } from '../utils/cropImage';
 // 导入魔法色工具函数
 import { getMagicBackgroundColor } from '../utils/colorExtractor';
 

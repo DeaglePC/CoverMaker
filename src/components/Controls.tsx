@@ -51,7 +51,6 @@ function Controls() {
     isMagicColorMode,
     setIsMagicColorMode,
     magicColor,
-    setMagicColor,
     updateMagicColor,
     isCropping,
     handleApplyCrop,
@@ -60,7 +59,6 @@ function Controls() {
     // 添加预览相关状态和函数
     imageSrc,
     completedCrop,
-    previewImage,
     isGeneratingPreview,
     handleGeneratePreview,
     resetToDefaults,

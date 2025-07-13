@@ -34,7 +34,6 @@ const Canvas = React.forwardRef<HTMLDivElement>((_, ref) => {
     textBackgroundBlur,
     isMagicColorMode,
     magicColor,
-    borderRadius,
   } = useCover();
 
   // 文字拖拽相关状态
@@ -106,13 +105,13 @@ const Canvas = React.forwardRef<HTMLDivElement>((_, ref) => {
   };
 
   // 超强阻止所有选中相关的事件
-  const preventSelection = (e: Event) => {
-    e.preventDefault();
-    e.stopPropagation();
-    e.stopImmediatePropagation();
-    clearTextSelection();
-    return false;
-  };
+  // const preventSelection = (e: Event) => {
+  //   e.preventDefault();
+  //   e.stopPropagation();
+  //   e.stopImmediatePropagation();
+  //   clearTextSelection();
+  //   return false;
+  // };
 
   // 阻止键盘选中（如Ctrl+A）
   const preventKeyboardSelection = (e: KeyboardEvent) => {
