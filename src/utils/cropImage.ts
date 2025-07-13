@@ -347,7 +347,7 @@ export async function getFinalImage(
   ctx.fillText(content, contentX, contentY, maxWidth);
 
   // --- Export ---
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     canvas.toBlob((blob) => {
       if (!blob) {
         console.error('Canvas is empty');
