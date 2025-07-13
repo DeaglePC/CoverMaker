@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  covermaker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:80"
+    container_name: covermaker-app
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+    volumes:
+      # 挂载静态文件目录，用于持久化
+      - ./public:/usr/share/nginx/html/public:ro
+    networks:
+      - covermaker-network
+
+  # 可选：开发环境服务
+  covermaker-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - "5173:5173"
+    container_name: covermaker-dev
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=development
+      - VITE_HOST=0.0.0.0
+    volumes:
+      - .:/app
+      - /app/node_modules
+    profiles:
+      - dev
+    networks:
+      - covermaker-network
+
+networks:
+  covermaker-network:
+    driver: bridge 
