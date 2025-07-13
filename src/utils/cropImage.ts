@@ -31,7 +31,6 @@ export interface DrawOptions {
   textBackgroundEnabled?: boolean;
   textBackgroundColor?: string;
   textBackgroundOpacity?: number;
-  textBackgroundBlur?: number;
   // 添加魔法色控制
   isMagicColorMode?: boolean;
   magicColor?: string;
@@ -65,6 +64,74 @@ function roundRect(
   ctx.closePath();
 }
 
+/**
+ * Draws a rectangle with selective rounded corners.
+ * @param {CanvasRenderingContext2D} ctx - The canvas rendering context.
+ * @param {number} x - The x-coordinate of the rectangle's top-left corner.
+ * @param {number} y - The y-coordinate of the rectangle's top-left corner.
+ * @param {number} width - The width of the rectangle.
+ * @param {number} height - The height of the rectangle.
+ * @param {number} radius - The corner radius.
+ * @param {boolean} topLeft - Whether to round the top-left corner.
+ * @param {boolean} topRight - Whether to round the top-right corner.
+ * @param {boolean} bottomRight - Whether to round the bottom-right corner.
+ * @param {boolean} bottomLeft - Whether to round the bottom-left corner.
+ */
+function selectiveRoundRect(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  radius: number,
+  topLeft: boolean = true,
+  topRight: boolean = true,
+  bottomRight: boolean = true,
+  bottomLeft: boolean = true
+) {
+  if (width < 2 * radius) radius = width / 2;
+  if (height < 2 * radius) radius = height / 2;
+  
+  ctx.beginPath();
+  
+  // Start from top-left corner
+  ctx.moveTo(x + (topLeft ? radius : 0), y);
+  
+  // Top side and top-right corner
+  if (topRight) {
+    ctx.arcTo(x + width, y, x + width, y + height, radius);
+  } else {
+    ctx.lineTo(x + width, y);
+    ctx.lineTo(x + width, y + radius);
+  }
+  
+  // Right side and bottom-right corner
+  if (bottomRight) {
+    ctx.arcTo(x + width, y + height, x, y + height, radius);
+  } else {
+    ctx.lineTo(x + width, y + height);
+    ctx.lineTo(x + width - radius, y + height);
+  }
+  
+  // Bottom side and bottom-left corner
+  if (bottomLeft) {
+    ctx.arcTo(x, y + height, x, y, radius);
+  } else {
+    ctx.lineTo(x, y + height);
+    ctx.lineTo(x, y + height - radius);
+  }
+  
+  // Left side and top-left corner
+  if (topLeft) {
+    ctx.arcTo(x, y, x + width, y, radius);
+  } else {
+    ctx.lineTo(x, y);
+    ctx.lineTo(x + radius, y);
+  }
+  
+  ctx.closePath();
+}
+
 // 修改返回类型，增加 width 和 height
 export type FinalImage = {
   url: string;
@@ -93,7 +160,6 @@ export async function getFinalImage(
     textBackgroundEnabled = false,
     textBackgroundColor = '#000000',
     textBackgroundOpacity = 50,
-    textBackgroundBlur = 10,
     isMagicColorMode = false,
     magicColor = '#333333',
   } = options;
@@ -233,32 +299,32 @@ export async function getFinalImage(
     
     ctx.save();
     
+    // 计算适当的圆角半径
+    const backgroundRadius = Math.min(actualRadius, backgroundHeight / 2, backgroundWidth / 2);
+    
+    ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${opacity})`;
+    
     if (textVAlign === 'center') {
-      // 中心对齐时，使用简单的背景和模糊
-      ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${opacity})`;
+      // 中心对齐时，使用完整的圆角背景
       ctx.beginPath();
-      roundRect(ctx, backgroundX, backgroundY, backgroundWidth, backgroundHeight, 8);
+      roundRect(ctx, backgroundX, backgroundY, backgroundWidth, backgroundHeight, backgroundRadius);
       ctx.fill();
       
-      // 如果有模糊效果，在背景周围添加模糊边缘
-      if (textBackgroundBlur > 0) {
-        ctx.filter = `blur(${textBackgroundBlur}px)`;
-        ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${opacity * 0.3})`;
-        ctx.beginPath();
-        roundRect(ctx, backgroundX - textBackgroundBlur, backgroundY - textBackgroundBlur, 
-                  backgroundWidth + textBackgroundBlur * 2, backgroundHeight + textBackgroundBlur * 2, 8);
-        ctx.fill();
-      }
-    } else {
-      // 顶部或底部对齐时，使用渐变背景
-      const gradient = ctx.createLinearGradient(0, backgroundY, 0, backgroundY + backgroundHeight);
-      
-             // 简化背景：顶部和底部都使用实心背景，不添加渐变效果
-       gradient.addColorStop(0, `rgba(${r}, ${g}, ${b}, ${opacity})`);
-       gradient.addColorStop(1, `rgba(${r}, ${g}, ${b}, ${opacity})`);
-      
-             ctx.fillStyle = gradient;
-       ctx.fillRect(backgroundX, backgroundY, backgroundWidth, backgroundHeight);
+
+    } else if (textVAlign === 'top') {
+      // 顶部对齐时，只有顶部圆角
+      ctx.beginPath();
+      selectiveRoundRect(ctx, backgroundX, backgroundY, backgroundWidth, backgroundHeight, backgroundRadius, 
+                        true, true, false, false);
+      ctx.fill();
+
+    } else if (textVAlign === 'bottom') {
+      // 底部对齐时，只有底部圆角
+      ctx.beginPath();
+      selectiveRoundRect(ctx, backgroundX, backgroundY, backgroundWidth, backgroundHeight, backgroundRadius, 
+                        false, false, true, true);
+      ctx.fill();
+
     }
     
     ctx.restore();

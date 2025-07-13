@@ -31,7 +31,6 @@ const Canvas = React.forwardRef<HTMLDivElement>((_, ref) => {
     textBackgroundEnabled,
     textBackgroundColor,
     textBackgroundOpacity,
-    textBackgroundBlur,
     isMagicColorMode,
     magicColor,
   } = useCover();
@@ -421,22 +420,7 @@ const Canvas = React.forwardRef<HTMLDivElement>((_, ref) => {
                                     zIndex: -1,
                                   }}
                                 />
-                                {textBackgroundBlur > 0 && (
-                                  <div 
-                                    className="text-background-blur"
-                                    style={{
-                                      position: 'absolute',
-                                      top: -10 - textBackgroundBlur,
-                                      left: -10 - textBackgroundBlur,
-                                      right: -10 - textBackgroundBlur,
-                                      height: `${titleSize + titleContentSpacing + contentSize + 20 + textBackgroundBlur * 2}px`,
-                                      backgroundColor: `${isMagicColorMode ? magicColor : textBackgroundColor}${Math.round(textBackgroundOpacity * 0.3 * 2.55).toString(16).padStart(2, '0')}`,
-                                      borderRadius: '8px',
-                                      backdropFilter: `blur(${textBackgroundBlur}px)`,
-                                      zIndex: -2,
-                                    }}
-                                  />
-                                )}
+
                               </>
                             ) : (
                               // 顶部或底部对齐时，使用渐变背景
@@ -450,7 +434,7 @@ const Canvas = React.forwardRef<HTMLDivElement>((_, ref) => {
                                    bottom: textVAlign === 'bottom' ? '0' : 'auto',
                                    height: textVAlign === 'top' ? `${titleSize + titleContentSpacing + contentSize + 40}px` : 'auto',
                                    background: `${isMagicColorMode ? magicColor : textBackgroundColor}${Math.round(textBackgroundOpacity * 2.55).toString(16).padStart(2, '0')}`,
-                                   backdropFilter: textBackgroundBlur > 0 ? `blur(${textBackgroundBlur}px)` : 'none',
+
                                    zIndex: -1,
                                  }}
                               />

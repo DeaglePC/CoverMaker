@@ -46,8 +46,6 @@ function Controls() {
     setTextBackgroundColor,
     textBackgroundOpacity,
     setTextBackgroundOpacity,
-    textBackgroundBlur,
-    setTextBackgroundBlur,
     isMagicColorMode,
     setIsMagicColorMode,
     magicColor,
@@ -247,6 +245,30 @@ function Controls() {
         </div>
 
         <div className="control-group">
+          <label>水平偏移: {textOffsetX}px</label>
+          <input
+            type="range"
+            min="-200"
+            max="200"
+            value={textOffsetX}
+            onChange={(e) => setTextOffsetX(Number(e.target.value))}
+            className="slider"
+          />
+        </div>
+
+        <div className="control-group">
+          <label>垂直偏移: {textOffsetY}px</label>
+          <input
+            type="range"
+            min="-200"
+            max="200"
+            value={textOffsetY}
+            onChange={(e) => setTextOffsetY(Number(e.target.value))}
+            className="slider"
+          />
+        </div>
+
+        <div className="control-group">
           <label>
             <input
               type="checkbox"
@@ -309,43 +331,9 @@ function Controls() {
               />
             </div>
 
-            <div className="control-group">
-              <label>背景模糊: {textBackgroundBlur}px</label>
-              <input
-                type="range"
-                min="0"
-                max="30"
-                value={textBackgroundBlur}
-                onChange={(e) => setTextBackgroundBlur(Number(e.target.value))}
-                className="slider"
-              />
-            </div>
+
           </>
         )} 
-
-        <div className="control-group">
-          <label>水平偏移: {textOffsetX}px</label>
-          <input
-            type="range"
-            min="-200"
-            max="200"
-            value={textOffsetX}
-            onChange={(e) => setTextOffsetX(Number(e.target.value))}
-            className="slider"
-          />
-        </div>
-
-        <div className="control-group">
-          <label>垂直偏移: {textOffsetY}px</label>
-          <input
-            type="range"
-            min="-200"
-            max="200"
-            value={textOffsetY}
-            onChange={(e) => setTextOffsetY(Number(e.target.value))}
-            className="slider"
-          />
-        </div>
 
         <div className="control-group">
           <label>圆角: {borderRadius}px</label>

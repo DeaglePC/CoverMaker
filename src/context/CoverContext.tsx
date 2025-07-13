@@ -44,8 +44,6 @@ interface CoverContextType {
     setTextBackgroundColor: (color: string) => void;
     textBackgroundOpacity: number;
     setTextBackgroundOpacity: (opacity: number) => void;
-    textBackgroundBlur: number;
-    setTextBackgroundBlur: (blur: number) => void;
     // 添加魔法色控制
     isMagicColorMode: boolean;
     setIsMagicColorMode: (isMagic: boolean) => void;
@@ -107,12 +105,11 @@ export const CoverProvider: React.FC<CoverProviderProps> = ({ children }) => {
     const [textOffsetX, setTextOffsetX] = useState<number>(0);
     const [textOffsetY, setTextOffsetY] = useState<number>(0);
     // 添加标题和内容间距状态
-    const [titleContentSpacing, setTitleContentSpacing] = useState<number>(66);
+    const [titleContentSpacing, setTitleContentSpacing] = useState<number>(80);
     // 添加文字背景状态
     const [textBackgroundEnabled, setTextBackgroundEnabled] = useState<boolean>(true);
     const [textBackgroundColor, setTextBackgroundColor] = useState<string>('#000000');
-    const [textBackgroundOpacity, setTextBackgroundOpacity] = useState<number>(50);
-    const [textBackgroundBlur, setTextBackgroundBlur] = useState<number>(10);
+    const [textBackgroundOpacity, setTextBackgroundOpacity] = useState<number>(88);
     // 添加魔法色状态
     const [isMagicColorMode, setIsMagicColorMode] = useState<boolean>(true);
     const [magicColor, setMagicColor] = useState<string>('#333333');
@@ -200,7 +197,6 @@ export const CoverProvider: React.FC<CoverProviderProps> = ({ children }) => {
                 textBackgroundEnabled,
                 textBackgroundColor,
                 textBackgroundOpacity,
-                textBackgroundBlur,
                 isMagicColorMode,
                 magicColor,
             });
@@ -235,7 +231,6 @@ export const CoverProvider: React.FC<CoverProviderProps> = ({ children }) => {
         textBackgroundEnabled,
         textBackgroundColor,
         textBackgroundOpacity,
-        textBackgroundBlur,
         isMagicColorMode,
         magicColor,
         previewImage,
@@ -250,7 +245,7 @@ export const CoverProvider: React.FC<CoverProviderProps> = ({ children }) => {
     }, [previewImage]);
 
     // 恢复默认值函数
-    const resetToDefaults = useCallback(() => {
+    const resetToDefaults = useCallback(async () => {
         setTitle('这里是标题');
         setContent('这里是正文内容，可以根据需要修改。');
         setAspect(3 / 4);
@@ -262,15 +257,17 @@ export const CoverProvider: React.FC<CoverProviderProps> = ({ children }) => {
         setTextHAlign('center');
         setTextOffsetX(0);
         setTextOffsetY(0);
-        setTitleContentSpacing(66);
+        setTitleContentSpacing(80);
         setTextBackgroundEnabled(true);
         setTextBackgroundColor('#000000');
-        setTextBackgroundOpacity(50);
-        setTextBackgroundBlur(10);
+        setTextBackgroundOpacity(88);
         setIsMagicColorMode(true);
         setMagicColor('#333333');
         setZoom(1);
-    }, []);
+        
+        // 自动更新魔法色
+        await updateMagicColor();
+    }, [updateMagicColor]);
 
     const handleDownload = async () => {
         if (!completedCrop || !imageSrc) {
@@ -297,7 +294,6 @@ export const CoverProvider: React.FC<CoverProviderProps> = ({ children }) => {
                 textBackgroundEnabled,
                 textBackgroundColor,
                 textBackgroundOpacity,
-                textBackgroundBlur,
                 isMagicColorMode,
                 magicColor,
             };
@@ -341,7 +337,6 @@ export const CoverProvider: React.FC<CoverProviderProps> = ({ children }) => {
                 textBackgroundEnabled: false,
                 textBackgroundColor: '#000000',
                 textBackgroundOpacity: 0,
-                textBackgroundBlur: 0,
             });
 
             if (croppedImgResult) {
@@ -393,8 +388,6 @@ export const CoverProvider: React.FC<CoverProviderProps> = ({ children }) => {
         setTextBackgroundColor,
         textBackgroundOpacity,
         setTextBackgroundOpacity,
-        textBackgroundBlur,
-        setTextBackgroundBlur,
         // 添加魔法色控制
         isMagicColorMode,
         setIsMagicColorMode,
