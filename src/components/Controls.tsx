@@ -34,10 +34,6 @@ function Controls() {
     setContentSize,
     textHAlign,
     setTextHAlign,
-    textOffsetX,
-    setTextOffsetX,
-    textOffsetY,
-    setTextOffsetY,
     titleContentSpacing,
     setTitleContentSpacing,
     textBackgroundEnabled,
@@ -146,28 +142,19 @@ function Controls() {
           <label>文字垂直位置</label>
           <div className="align-buttons">
             <button 
-              onClick={() => {
-                setTextVAlign('top');
-                setTextOffsetY(-50); // 顶部对齐时，设置向上偏移
-              }} 
+              onClick={() => setTextVAlign('top')} 
               className={textVAlign === 'top' ? 'active' : ''}
             >
               顶部
             </button>
             <button 
-              onClick={() => {
-                setTextVAlign('center');
-                setTextOffsetY(0); // 居中对齐时，重置垂直偏移
-              }} 
+              onClick={() => setTextVAlign('center')} 
               className={textVAlign === 'center' ? 'active' : ''}
             >
               居中
             </button>
             <button 
-              onClick={() => {
-                setTextVAlign('bottom');
-                setTextOffsetY(50); // 底部对齐时，设置向下偏移
-              }} 
+              onClick={() => setTextVAlign('bottom')} 
               className={textVAlign === 'bottom' ? 'active' : ''}
             >
               底部
@@ -179,28 +166,19 @@ function Controls() {
           <label>文字水平位置</label>
           <div className="align-buttons">
             <button 
-              onClick={() => {
-                setTextHAlign('left');
-                setTextOffsetX(-50); // 左对齐时，设置向左偏移
-              }} 
+              onClick={() => setTextHAlign('left')} 
               className={textHAlign === 'left' ? 'active' : ''}
             >
               左对齐
             </button>
             <button 
-              onClick={() => {
-                setTextHAlign('center');
-                setTextOffsetX(0); // 居中对齐时，重置水平偏移
-              }} 
+              onClick={() => setTextHAlign('center')} 
               className={textHAlign === 'center' ? 'active' : ''}
             >
               居中
             </button>
             <button 
-              onClick={() => {
-                setTextHAlign('right');
-                setTextOffsetX(50); // 右对齐时，设置向右偏移
-              }} 
+              onClick={() => setTextHAlign('right')} 
               className={textHAlign === 'right' ? 'active' : ''}
             >
               右对齐
@@ -240,30 +218,6 @@ function Controls() {
             max="100"
             value={titleContentSpacing}
             onChange={(e) => setTitleContentSpacing(Number(e.target.value))}
-            className="slider"
-          />
-        </div>
-
-        <div className="control-group">
-          <label>水平偏移: {textOffsetX}px</label>
-          <input
-            type="range"
-            min="-200"
-            max="200"
-            value={textOffsetX}
-            onChange={(e) => setTextOffsetX(Number(e.target.value))}
-            className="slider"
-          />
-        </div>
-
-        <div className="control-group">
-          <label>垂直偏移: {textOffsetY}px</label>
-          <input
-            type="range"
-            min="-200"
-            max="200"
-            value={textOffsetY}
-            onChange={(e) => setTextOffsetY(Number(e.target.value))}
             className="slider"
           />
         </div>
