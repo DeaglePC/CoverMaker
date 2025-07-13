@@ -1,19 +1,38 @@
+.controls-wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
 .controls-section {
   display: flex;
   flex-direction: column;
   gap: 1.25rem; /* Consistent gap between control groups */
   padding: 1rem;
-  background-color: #f8f9fa;
-  border-radius: 8px;
-  height: 100%;
-  box-sizing: border-box;
+  flex: 1;
   overflow-y: auto;
+  /* 为底部按钮留出空间 */
+  padding-bottom: 0.5rem;
+}
+
+.fixed-bottom-actions {
+  position: sticky;
+  bottom: 0;
+  background-color: #f8f9fa;
+  border-top: 1px solid #dee2e6;
+  padding: 1rem;
+  margin-top: auto;
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .control-group-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1rem;
+  margin-bottom: 1rem;
 }
 
 .control-button {
@@ -46,10 +65,43 @@
   transform: translateY(-1px);
 }
 
+.preview-button {
+  background-color: #3498db;
+  color: white;
+}
+.preview-button:hover:not(:disabled) {
+  background-color: #2980b9;
+  transform: translateY(-1px);
+}
+.preview-button:disabled {
+  background-color: #bdc3c7;
+  cursor: not-allowed;
+}
+
+.clear-preview-button {
+  background-color: #e74c3c;
+  color: white;
+}
+.clear-preview-button:hover {
+  background-color: #c0392b;
+  transform: translateY(-1px);
+}
+
+.reset-button {
+  background-color: #f39c12;
+  color: white;
+  width: 100%;
+  margin-bottom: 1rem;
+}
+.reset-button:hover {
+  background-color: #e67e22;
+  transform: translateY(-1px);
+}
+
 .download-button {
   background-color: #198754;
   color: white;
-  margin-top: 1rem; /* Add some space before the final button */
+  width: 100%;
 }
 .download-button:hover {
   background-color: #157347;
@@ -66,6 +118,9 @@
   font-weight: 500;
   font-size: 0.9rem;
   color: #495057;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
 }
 
 .control-group input[type="text"],
@@ -90,6 +145,31 @@
 .control-group textarea {
   min-height: 80px;
   resize: vertical;
+}
+
+/* 复选框样式 */
+.control-group input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: #0d6efd;
+  cursor: pointer;
+}
+
+/* 按钮组样式 */
+.aspect-ratio-group {
+  margin-bottom: 0.75rem;
+}
+
+.aspect-ratio-group:last-child {
+  margin-bottom: 0;
+}
+
+.aspect-ratio-label {
+  font-size: 0.8rem;
+  color: #6c757d;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  text-align: center;
 }
 
 .aspect-ratio-buttons, .align-buttons {
@@ -119,6 +199,41 @@
   background-color: #e9ecef;
 }
 
+/* 颜色选择器样式 */
+.color-control-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.color-mode-buttons {
+  display: flex;
+  gap: 5px;
+}
+
+.color-mode-btn {
+  flex: 1;
+  padding: 8px 12px;
+  border: 2px solid #3498db;
+  border-radius: 8px;
+  background-color: transparent;
+  color: #3498db;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.color-mode-btn:hover {
+  background-color: #3498db;
+  color: white;
+}
+
+.color-mode-btn.active {
+  background-color: #3498db;
+  color: white;
+}
+
 .color-picker-container {
   display: flex;
   align-items: center;
@@ -143,37 +258,40 @@
   background-color: transparent;
   border: none;
   cursor: pointer;
+  transition: opacity 0.2s ease;
 }
+
+.color-picker:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .color-picker::-webkit-color-swatch {
   border-radius: 6px;
   border: 1px solid #ddd;
 }
+
 .color-picker::-moz-color-swatch {
   border-radius: 6px;
   border: 1px solid #ddd;
 }
 
+/* 滑块样式优化 - 蓝色主题 */
 .slider {
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  appearance: none;
   width: 100%;
   height: 6px;
   border-radius: 3px;
-  background: #dee2e6;
+  background: #ddd !important;
   outline: none;
-  opacity: 0.8;
-  transition: opacity .2s;
-  margin-top: 4px;
+  transition: background 0.2s;
+  cursor: pointer;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
 }
 
 .slider:hover {
-  opacity: 1;
-}
-
-.slider:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
+  background: #bbb !important;
 }
 
 .slider::-webkit-slider-thumb {
@@ -182,14 +300,77 @@
   width: 18px;
   height: 18px;
   border-radius: 50%;
-  background: #0d6efd;
+  background: #3498db !important;
   cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s ease-in-out;
+  border: none;
+}
+
+.slider::-webkit-slider-thumb:hover {
+  background: #2980b9 !important;
+  transform: scale(1.1);
 }
 
 .slider::-moz-range-thumb {
   width: 18px;
   height: 18px;
   border-radius: 50%;
-  background: #0d6efd;
+  background: #3498db !important;
   cursor: pointer;
+  border: none;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s ease-in-out;
+  -moz-appearance: none;
+}
+
+.slider::-moz-range-thumb:hover {
+  background: #2980b9 !important;
+  transform: scale(1.1);
+}
+
+.slider::-moz-range-track {
+  background: #ddd !important;
+  height: 6px;
+  border-radius: 3px;
+  border: none;
+}
+
+.slider::-ms-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #3498db !important;
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.slider::-ms-track {
+  background: #ddd !important;
+  height: 6px;
+  border-radius: 3px;
+  border: none;
+  color: transparent;
+}
+
+.slider::-ms-fill-lower,
+.slider::-ms-fill-upper {
+  background: #ddd !important;
+  border-radius: 3px;
+}
+
+.slider:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.slider:disabled::-webkit-slider-thumb {
+  background: #bdc3c7 !important;
+  cursor: not-allowed;
+}
+
+.slider:disabled::-moz-range-thumb {
+  background: #bdc3c7 !important;
+  cursor: not-allowed;
 } 
