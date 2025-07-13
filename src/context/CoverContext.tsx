@@ -4,6 +4,8 @@ import { Area } from 'react-easy-crop';
 import { getFinalImage } from '../utils/cropImage';
 // 导入魔法色工具函数
 import { getMagicBackgroundColor } from '../utils/colorExtractor';
+// 导入字体工具函数
+import { getAvailableFonts } from '../utils/fontUtils';
 
 type VAlign = 'top' | 'center' | 'bottom';
 
@@ -30,6 +32,10 @@ interface CoverContextType {
     // 添加文字位置控制
     textHAlign: 'left' | 'center' | 'right';
     setTextHAlign: (align: 'left' | 'center' | 'right') => void;
+    // 添加字体控制
+    fontFamily: string;
+    setFontFamily: (font: string) => void;
+    availableFonts: Array<{ name: string; value: string }>;
     // 添加标题和内容间距控制
     titleContentSpacing: number;
     setTitleContentSpacing: (spacing: number) => void;
@@ -46,6 +52,11 @@ interface CoverContextType {
     magicColor: string;
     setMagicColor: (color: string) => void;
     updateMagicColor: () => Promise<void>;
+    // 添加文字位置偏移控制
+    textOffsetX: number;
+    setTextOffsetX: (offsetX: number) => void;
+    textOffsetY: number;
+    setTextOffsetY: (offsetY: number) => void;
     crop: { x: number; y: number };
     setCrop: (crop: { x: number; y: number }) => void;
     zoom: number;
@@ -98,6 +109,9 @@ export const CoverProvider: React.FC<CoverProviderProps> = ({ children }) => {
     const [contentSize, setContentSize] = useState<number>(38);
     // 添加文字位置状态
     const [textHAlign, setTextHAlign] = useState<'left' | 'center' | 'right'>('center');
+    // 添加字体状态
+    const [fontFamily, setFontFamily] = useState<string>('Microsoft YaHei, sans-serif');
+    const [availableFonts] = useState(getAvailableFonts());
     // 添加标题和内容间距状态
     const [titleContentSpacing, setTitleContentSpacing] = useState<number>(80);
     // 添加文字背景状态
@@ -107,6 +121,9 @@ export const CoverProvider: React.FC<CoverProviderProps> = ({ children }) => {
     // 添加魔法色状态
     const [isMagicColorMode, setIsMagicColorMode] = useState<boolean>(true);
     const [magicColor, setMagicColor] = useState<string>('#333333');
+    // 添加文字位置偏移状态
+    const [textOffsetX, setTextOffsetX] = useState<number>(0);
+    const [textOffsetY, setTextOffsetY] = useState<number>(0);
     const [crop, setCrop] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
     const [zoom, setZoom] = useState<number>(1);
     const [completedCrop, setCompletedCrop] = useState<Area | null>(null);
@@ -185,8 +202,9 @@ export const CoverProvider: React.FC<CoverProviderProps> = ({ children }) => {
                 titleSize,
                 contentSize,
                 textHAlign,
-                textOffsetX: 0,
-                textOffsetY: 0,
+                textOffsetX,
+                textOffsetY,
+                fontFamily,
                 titleContentSpacing,
                 textBackgroundEnabled,
                 textBackgroundColor,
@@ -219,6 +237,9 @@ export const CoverProvider: React.FC<CoverProviderProps> = ({ children }) => {
         titleSize,
         contentSize,
         textHAlign,
+        textOffsetX,
+        textOffsetY,
+        fontFamily,
         titleContentSpacing,
         textBackgroundEnabled,
         textBackgroundColor,
@@ -243,32 +264,47 @@ export const CoverProvider: React.FC<CoverProviderProps> = ({ children }) => {
         setTextColor('#ffffff');
         setTextVAlign('bottom');
         setTextHAlign('center');
+        setFontFamily('Microsoft YaHei, sans-serif');
         setBorderRadius(50);
-        setTitleContentSpacing(80);
         setTextBackgroundEnabled(true);
         setTextBackgroundColor('#000000');
         setTextBackgroundOpacity(88);
         setIsMagicColorMode(true);
         setMagicColor('#333333');
+        setTextOffsetX(0);
+        setTextOffsetY(0);
         
-        // 智能字体大小：如果有裁剪后的图片尺寸，使用智能计算；否则使用固定默认值
+        // 智能字体大小和圆角：如果有裁剪后的图片尺寸，使用智能计算；否则使用固定默认值
         if (croppedImageDimensions) {
             const smartTitleSize = Math.round(croppedImageDimensions.width * 0.07);
             const smartContentSize = Math.round(croppedImageDimensions.width * 0.05);
             
-            // 设置合理的字体大小范围
+            // 设置合理的字体大小范围（根据图片宽度动态计算最大值）
             const minTitleSize = 12;
-            const maxTitleSize = 300;
+            const maxTitleSize = Math.round(croppedImageDimensions.width * 0.3);
             const minContentSize = 8;
-            const maxContentSize = 200;
+            const maxContentSize = Math.round(croppedImageDimensions.width * 0.3);
             
             // 应用智能字体大小，但限制在合理范围内
-            setTitleSize(Math.max(minTitleSize, Math.min(maxTitleSize, smartTitleSize)));
+            const finalTitleSize = Math.max(minTitleSize, Math.min(maxTitleSize, smartTitleSize));
+            setTitleSize(finalTitleSize);
             setContentSize(Math.max(minContentSize, Math.min(maxContentSize, smartContentSize)));
+            
+            // 间距大小与标题大小保持一致
+            setTitleContentSpacing(finalTitleSize);
+            
+            // 根据裁剪后的图片宽度智能调整圆角
+            const smartBorderRadius = Math.round(croppedImageDimensions.width * 0.065);
+            const maxBorderRadius = Math.round(croppedImageDimensions.width * 0.25);
+            const finalBorderRadius = Math.min(smartBorderRadius, maxBorderRadius);
+            setBorderRadius(finalBorderRadius);
         } else {
             // 如果没有裁剪后的图片尺寸，使用固定默认值
             setTitleSize(80);
             setContentSize(38);
+            // 间距大小与标题大小保持一致
+            setTitleContentSpacing(80);
+            setBorderRadius(50);
         }
         
         // 清理预览图片
@@ -278,7 +314,10 @@ export const CoverProvider: React.FC<CoverProviderProps> = ({ children }) => {
         if (imageSrc) {
             await updateMagicColor();
         }
-    }, [handleClearPreview, imageSrc, updateMagicColor, croppedImageDimensions]);
+        
+        // 重新生成预览
+        handleGeneratePreview();
+    }, [handleClearPreview, imageSrc, updateMagicColor, croppedImageDimensions, handleGeneratePreview]);
 
     const handleDownload = async () => {
         if (!imageSrc || !completedCrop) {
@@ -298,8 +337,9 @@ export const CoverProvider: React.FC<CoverProviderProps> = ({ children }) => {
                 titleSize,
                 contentSize,
                 textHAlign,
-                textOffsetX: 0,
-                textOffsetY: 0,
+                textOffsetX,
+                textOffsetY,
+                fontFamily,
                 titleContentSpacing,
                 textBackgroundEnabled,
                 textBackgroundColor,
@@ -338,8 +378,9 @@ export const CoverProvider: React.FC<CoverProviderProps> = ({ children }) => {
                 titleSize,
                 contentSize,
                 textHAlign,
-                textOffsetX: 0,
-                textOffsetY: 0,
+                textOffsetX,
+                textOffsetY,
+                fontFamily,
                 titleContentSpacing,
                 textBackgroundEnabled,
                 textBackgroundColor,
@@ -357,11 +398,11 @@ export const CoverProvider: React.FC<CoverProviderProps> = ({ children }) => {
                 const smartTitleSize = Math.round(finalImage.width * 0.07);
                 const smartContentSize = Math.round(finalImage.width * 0.04);
                 
-                // 设置合理的字体大小范围
+                // 设置合理的字体大小范围（根据图片宽度动态计算最大值）
                 const minTitleSize = 12;
-                const maxTitleSize = 300;
+                const maxTitleSize = Math.round(finalImage.width * 0.3);
                 const minContentSize = 8;
-                const maxContentSize = 200;
+                const maxContentSize = Math.round(finalImage.width * 0.3);
                 
                 // 应用智能字体大小，但限制在合理范围内
                 const finalTitleSize = Math.max(minTitleSize, Math.min(maxTitleSize, smartTitleSize));
@@ -369,6 +410,15 @@ export const CoverProvider: React.FC<CoverProviderProps> = ({ children }) => {
                 
                 setTitleSize(finalTitleSize);
                 setContentSize(finalContentSize);
+                
+                // 间距大小与标题大小保持一致
+                setTitleContentSpacing(finalTitleSize);
+                
+                // 根据裁剪后的图片宽度智能调整圆角
+                const smartBorderRadius = Math.round(finalImage.width * 0.065);
+                const maxBorderRadius = Math.round(finalImage.width * 0.25);
+                const finalBorderRadius = Math.min(smartBorderRadius, maxBorderRadius);
+                setBorderRadius(finalBorderRadius);
                 
                 // 应用裁剪后自动生成预览，使用新计算的字体大小
                 try {
@@ -384,9 +434,10 @@ export const CoverProvider: React.FC<CoverProviderProps> = ({ children }) => {
                         titleSize: finalTitleSize,
                         contentSize: finalContentSize,
                         textHAlign,
-                        textOffsetX: 0,
-                        textOffsetY: 0,
-                        titleContentSpacing,
+                        textOffsetX,
+                        textOffsetY,
+                        fontFamily,
+                        titleContentSpacing: finalTitleSize,
                         textBackgroundEnabled,
                         textBackgroundColor,
                         textBackgroundOpacity,
@@ -436,6 +487,9 @@ export const CoverProvider: React.FC<CoverProviderProps> = ({ children }) => {
                 setContentSize,
                 textHAlign,
                 setTextHAlign,
+                fontFamily,
+                setFontFamily,
+                availableFonts,
                 titleContentSpacing,
                 setTitleContentSpacing,
                 textBackgroundEnabled,
@@ -449,6 +503,10 @@ export const CoverProvider: React.FC<CoverProviderProps> = ({ children }) => {
                 magicColor,
                 setMagicColor,
                 updateMagicColor,
+                textOffsetX,
+                setTextOffsetX,
+                textOffsetY,
+                setTextOffsetY,
                 crop,
                 setCrop,
                 zoom,

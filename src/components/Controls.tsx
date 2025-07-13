@@ -1,6 +1,7 @@
 import './Controls.css';
 import { useCover } from '../context/CoverContext';
 import ImageUploader from './ImageUploader';
+import { getFontDisplayName } from '../utils/fontUtils';
 
 // 定义宽高比常量
 const ASPECT_RATIOS = {
@@ -34,6 +35,9 @@ function Controls() {
     setContentSize,
     textHAlign,
     setTextHAlign,
+    fontFamily,
+    setFontFamily,
+    availableFonts,
     titleContentSpacing,
     setTitleContentSpacing,
     textBackgroundEnabled,
@@ -44,8 +48,13 @@ function Controls() {
     setTextBackgroundOpacity,
     isMagicColorMode,
     setIsMagicColorMode,
+    textOffsetX,
+    setTextOffsetX,
+    textOffsetY,
+    setTextOffsetY,
     magicColor,
     updateMagicColor,
+    croppedImageDimensions,
     isCropping,
     handleApplyCrop,
     handleDownload,
@@ -102,8 +111,6 @@ function Controls() {
               <button onClick={() => handleAspectChange(ASPECT_RATIOS.RATIO_1_1)} className={Math.abs(aspect - ASPECT_RATIOS.RATIO_1_1) < 0.001 ? 'active' : ''}>1:1</button>
             </div>
           </div>
-
-          
         </div>
 
         <div className="control-group">
@@ -136,6 +143,21 @@ function Controls() {
             <input type="color" value={textColor} onChange={(e) => setTextColor(e.target.value)} className="color-picker" />
             <span>{textColor}</span>
           </div>
+        </div>
+
+        <div className="control-group">
+          <label>字体</label>
+          <select 
+            value={fontFamily} 
+            onChange={(e) => setFontFamily(e.target.value)}
+            className="font-selector"
+          >
+            {availableFonts.map((font) => (
+              <option key={font.value} value={font.value} style={{ fontFamily: font.value }}>
+                {font.name}
+              </option>
+            ))}
+          </select>
         </div>
 
         <div className="control-group">
@@ -187,11 +209,35 @@ function Controls() {
         </div>
 
         <div className="control-group">
+          <label>文字水平偏移: {textOffsetX}px</label>
+          <input
+            type="range"
+            min="-200"
+            max="200"
+            value={textOffsetX}
+            onChange={(e) => setTextOffsetX(Number(e.target.value))}
+            className="slider"
+          />
+        </div>
+
+        <div className="control-group">
+          <label>文字垂直偏移: {textOffsetY}px</label>
+          <input
+            type="range"
+            min="-200"
+            max="200"
+            value={textOffsetY}
+            onChange={(e) => setTextOffsetY(Number(e.target.value))}
+            className="slider"
+          />
+        </div>
+
+        <div className="control-group">
           <label>标题大小: {titleSize}px</label>
           <input
             type="range"
             min="12"
-            max="300"
+            max={croppedImageDimensions ? Math.round(croppedImageDimensions.width * 0.3) : 300}
             value={titleSize}
             onChange={(e) => setTitleSize(Number(e.target.value))}
             className="slider"
@@ -203,7 +249,7 @@ function Controls() {
           <input
             type="range"
             min="8"
-            max="200"
+            max={croppedImageDimensions ? Math.round(croppedImageDimensions.width * 0.3) : 200}
             value={contentSize}
             onChange={(e) => setContentSize(Number(e.target.value))}
             className="slider"
@@ -215,7 +261,7 @@ function Controls() {
           <input
             type="range"
             min="0"
-            max="100"
+            max={croppedImageDimensions ? Math.round(croppedImageDimensions.width * 0.3) : 300}
             value={titleContentSpacing}
             onChange={(e) => setTitleContentSpacing(Number(e.target.value))}
             className="slider"
@@ -294,7 +340,7 @@ function Controls() {
           <input
             type="range"
             min="0"
-            max="150"
+            max={croppedImageDimensions ? Math.round(croppedImageDimensions.width * 0.25) : 150}
             value={borderRadius}
             onChange={(e) => setBorderRadius(Number(e.target.value))}
             className="slider"

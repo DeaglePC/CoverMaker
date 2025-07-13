@@ -25,6 +25,8 @@ export interface DrawOptions {
   textHAlign?: 'left' | 'center' | 'right';
   textOffsetX?: number;
   textOffsetY?: number;
+  // 添加字体控制
+  fontFamily?: string;
   // 添加标题和内容间距控制
   titleContentSpacing?: number;
   // 添加文字背景控制
@@ -156,6 +158,7 @@ export async function getFinalImage(
     textHAlign = 'center',
     textOffsetX = 0,
     textOffsetY = 0,
+    fontFamily = 'Microsoft YaHei, sans-serif',
     titleContentSpacing = 66,
     textBackgroundEnabled = false,
     textBackgroundColor = '#000000',
@@ -211,12 +214,12 @@ export async function getFinalImage(
   // Title styles - 使用动态字体大小
   const titleFontSize = titleSize;
   ctx.fillStyle = textColor;
-  ctx.font = `bold ${titleFontSize}px "Microsoft YaHei", sans-serif`;
+  ctx.font = `bold ${titleFontSize}px ${fontFamily}`;
   ctx.textAlign = textHAlign;
 
   // Content styles - 使用动态字体大小
   const contentFontSize = contentSize;
-  const contentFont = `${contentFontSize}px "Microsoft YaHei", sans-serif`;
+  const contentFont = `${contentFontSize}px ${fontFamily}`;
 
   // Calculate text positions using dynamic spacing
   let titleY, contentY;
@@ -259,7 +262,7 @@ export async function getFinalImage(
     ctx.save();
     
     // Calculate text dimensions for background
-    ctx.font = `bold ${titleFontSize}px "Microsoft YaHei", sans-serif`;
+    ctx.font = `bold ${titleFontSize}px ${fontFamily}`;
     const titleMetrics = ctx.measureText(title);
     
     ctx.font = contentFont;
@@ -340,7 +343,7 @@ export async function getFinalImage(
 
   // Draw title and content
   ctx.fillStyle = textColor;
-  ctx.font = `bold ${titleFontSize}px "Microsoft YaHei", sans-serif`;
+  ctx.font = `bold ${titleFontSize}px ${fontFamily}`;
   ctx.fillText(title, titleX, titleY, maxWidth);
   
   ctx.font = contentFont;
