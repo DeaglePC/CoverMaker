@@ -361,15 +361,15 @@ function Controls() {
           className="control-button preview-button"
           style={{ width: '100%', marginBottom: '1rem' }}
         >
-          {isGeneratingPreview ? '生成中...' : '生成预览'}
+          {isGeneratingPreview ? '⏳ 生成中...' : '🖼️ 生成预览'}
         </button>
         
         <button onClick={resetToDefaults} className="control-button reset-button">
-          恢复默认
+          🔄 恢复默认
         </button>
 
         <button onClick={handleDownload} className="control-button download-button">
-          下载封面
+          📥 下载封面
         </button>
       </div>
     </div>

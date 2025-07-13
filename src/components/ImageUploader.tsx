@@ -31,16 +31,16 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageUpload, isCropping
       />
       <div className="control-group-grid">
         <button onClick={handleUploadClick} className="control-button upload-button">
-          上传图片
+          📁 上传图片
         </button>
 
         {isCropping ? (
           <button onClick={onApplyCrop} className="control-button apply-button">
-            应用剪裁
+            ✂️ 应用剪裁
           </button>
         ) : (
           <button onClick={() => setIsCropping(true)} className="control-button recrop-button">
-            重新剪裁
+            🔄 重新剪裁
           </button>
         )}
       </div>
