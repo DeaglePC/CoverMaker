@@ -52,15 +52,96 @@
 @media (max-width: 1024px) {
   .cover-maker {
     grid-template-columns: 1fr;
-    grid-template-rows: auto 1fr; /* Controls auto height, canvas takes rest */
+    grid-template-rows: 60vh auto; /* Canvas gets 60% height, controls get remaining */
     width: 100%;
-    height: 100%;
+    height: 100vh;
     border-radius: 0;
     padding: 1rem;
     gap: 1rem;
+    max-height: none;
+  }
+  
+  .canvas-container {
+    min-height: 300px; /* 确保画布有最小高度 */
   }
   
   .controls-container {
-    order: -1; /* Move controls to the top on mobile */
+    order: 1; /* 控件在下方 */
+    height: auto;
+    max-height: 35vh; /* 限制控件最大高度 */
+    overflow-y: auto; /* 允许滚动 */
+  }
+}
+
+@media (max-width: 768px) {
+  .cover-maker {
+    grid-template-rows: 50vh auto; /* 在更小屏幕上给画布更多空间 */
+    padding: 0.5rem;
+    height: 100vh;
+  }
+  
+  .canvas-container {
+    min-height: 250px;
+  }
+  
+  .controls-container {
+    max-height: 45vh; /* 在小屏幕上允许更多控件空间 */
+  }
+}
+
+/* 移动端切换按钮 */
+.mobile-toggle-button {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 1000;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 25px;
+  padding: 8px 16px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+  transition: all 0.2s ease-in-out;
+}
+
+.mobile-toggle-button:hover {
+  background-color: #0056b3;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(0, 123, 255, 0.4);
+}
+
+.mobile-toggle-button:active {
+  transform: translateY(0);
+}
+
+/* 隐藏控件面板 */
+.controls-container.hidden {
+  display: none;
+}
+
+/* 当控件隐藏时，给画布更多空间 */
+@media (max-width: 1024px) {
+  .cover-maker:has(.controls-container.hidden) {
+    grid-template-rows: 1fr; /* 画布占满整个屏幕 */
+  }
+  
+  .cover-maker:has(.controls-container.hidden) .canvas-container {
+    height: calc(100vh - 2rem); /* 减去padding */
+  }
+}
+
+@media (max-width: 768px) {
+  .mobile-toggle-button {
+    top: 0.5rem;
+    right: 0.5rem;
+    padding: 6px 12px;
+    font-size: 0.8rem;
+  }
+  
+  .cover-maker:has(.controls-container.hidden) .canvas-container {
+    height: calc(100vh - 1rem); /* 减去padding */
   }
 } 

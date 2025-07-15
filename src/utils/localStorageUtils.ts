@@ -26,6 +26,13 @@ export interface SavedSettings {
   aspect: number;
   borderRadius: number;
   zoom: number;
+  
+  // 边框相关参数
+  borderEnabled: boolean;
+  borderWidth: number; // 固定默认值，实际使用时会基于图片宽度的1%动态计算
+  borderColor: string;
+  isBorderMagicColorMode: boolean;
+  isBorderTransparent: boolean;
 }
 
 // 默认设置
@@ -48,6 +55,11 @@ export const defaultSettings: SavedSettings = {
   aspect: 3 / 4,
   borderRadius: 80,
   zoom: 1,
+  borderEnabled: false,
+  borderWidth: 4, // 备用默认值，实际使用时为裁剪后图片宽度的1%
+  borderColor: '#ffffff',
+  isBorderMagicColorMode: false,
+  isBorderTransparent: false,
 };
 
 // 保存设置到本地存储

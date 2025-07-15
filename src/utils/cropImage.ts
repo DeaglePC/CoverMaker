@@ -10,6 +10,29 @@ const createImage = (url: string): Promise<HTMLImageElement> =>
     image.src = url;
   });
 
+// Helper function to create a checkered pattern canvas
+const createCheckeredCanvas = (size: number): HTMLCanvasElement => {
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+  
+  if (!ctx) {
+    return canvas;
+  }
+  
+  canvas.width = size * 2;
+  canvas.height = size * 2;
+  
+  // 绘制棋盘格图案
+  ctx.fillStyle = '#f0f0f0'; // 浅灰色
+  ctx.fillRect(0, 0, size * 2, size * 2);
+  
+  ctx.fillStyle = '#d0d0d0'; // 深灰色
+  ctx.fillRect(0, 0, size, size);
+  ctx.fillRect(size, size, size, size);
+  
+  return canvas;
+};
+
 // Interface for all the options we need to draw the final image
 export interface DrawOptions {
   imageSrc: string;
@@ -36,6 +59,14 @@ export interface DrawOptions {
   // 添加魔法色控制
   isMagicColorMode?: boolean;
   magicColor?: string;
+  // 添加边框控制
+  borderEnabled?: boolean;
+  borderWidth?: number;
+  borderColor?: string;
+  isBorderMagicColorMode?: boolean;
+  isBorderTransparent?: boolean;
+  // 添加预览模式标志
+  isPreview?: boolean;
 }
 
 /**
@@ -302,6 +333,12 @@ export async function getFinalImage(
     textBackgroundOpacity = 50,
     isMagicColorMode = false,
     magicColor = '#333333',
+    borderEnabled = false,
+    borderWidth = 4,
+    borderColor = '#ffffff',
+    isBorderMagicColorMode = false,
+    isBorderTransparent = false,
+    isPreview = false,
   } = options;
 
   const image = await createImage(imageSrc);
@@ -497,6 +534,77 @@ export async function getFinalImage(
   ctx.font = contentFont;
   if (content) {
     drawMultilineText(ctx, content, contentX, contentY, maxWidth, contentLineHeight, textHAlign);
+  }
+
+  // --- Draw Border ---
+  if (borderEnabled && borderWidth > 0) {
+    ctx.save();
+    
+    // 清除阴影效果，避免边框有阴影
+    ctx.shadowColor = 'transparent';
+    ctx.shadowBlur = 0;
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 0;
+    
+    if (isBorderTransparent) {
+      // 透明边框处理
+      if (isPreview) {
+        // 预览模式：绘制棋盘格效果让用户看到透明边框位置
+        const checkeredPattern = ctx.createPattern(createCheckeredCanvas(20), 'repeat');
+        if (checkeredPattern) {
+          const outerRadius = actualRadius;
+          const innerRadius = Math.max(0, actualRadius - borderWidth);
+          
+          // 创建临时canvas来绘制边框
+          const tempCanvas = document.createElement('canvas');
+          tempCanvas.width = canvas.width;
+          tempCanvas.height = canvas.height;
+          const tempCtx = tempCanvas.getContext('2d');
+          
+          if (tempCtx) {
+            // 在临时canvas上绘制边框区域的棋盘格
+            tempCtx.fillStyle = checkeredPattern;
+            
+            // 绘制外边框
+            tempCtx.beginPath();
+            roundRect(tempCtx, 0, 0, canvas.width, canvas.height, outerRadius);
+            tempCtx.fill();
+            
+            // 挖掉内部区域
+            tempCtx.globalCompositeOperation = 'destination-out';
+            tempCtx.beginPath();
+            roundRect(tempCtx, borderWidth, borderWidth, canvas.width - borderWidth * 2, canvas.height - borderWidth * 2, innerRadius);
+            tempCtx.fill();
+            
+            // 将临时canvas绘制到主canvas上
+            ctx.drawImage(tempCanvas, 0, 0);
+          }
+        }
+      }
+      // 如果不是预览模式，透明边框就不绘制任何内容，保持真正透明
+    } else {
+      // 绘制普通边框
+      const finalBorderColor = isBorderMagicColorMode ? magicColor : borderColor;
+      ctx.strokeStyle = finalBorderColor;
+      ctx.lineWidth = borderWidth;
+      
+      // 边框应该从边框宽度的一半开始绘制，这样边框不会超出画布边界
+      const borderOffset = borderWidth / 2;
+      const borderX = borderOffset;
+      const borderY = borderOffset;
+      const borderInnerWidth = canvas.width - borderWidth;
+      const borderInnerHeight = canvas.height - borderWidth;
+      
+      // 确保边框圆角与图片圆角一致，但要考虑边框偏移
+      const borderRadius = Math.max(0, actualRadius - borderOffset);
+      
+      // 绘制边框路径
+      ctx.beginPath();
+      roundRect(ctx, borderX, borderY, borderInnerWidth, borderInnerHeight, borderRadius);
+      ctx.stroke();
+    }
+    
+    ctx.restore();
   }
 
   // --- Export ---
