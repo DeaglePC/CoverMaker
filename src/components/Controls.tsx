@@ -75,6 +75,8 @@ function Controls() {
     setBorderColor,
     isBorderMagicColorMode,
     setIsBorderMagicColorMode,
+    isBorderTransparent,
+    setIsBorderTransparent,
   } = useCover();
 
   // 处理宽高比变更的函数
@@ -431,8 +433,11 @@ function Controls() {
               <div className="color-control-container">
                 <div className="color-mode-buttons">
                   <button 
-                    className={`color-mode-btn ${!isBorderMagicColorMode ? 'active' : ''}`}
-                    onClick={() => setIsBorderMagicColorMode(false)}
+                    className={`color-mode-btn ${!isBorderMagicColorMode && !isBorderTransparent ? 'active' : ''}`}
+                    onClick={() => {
+                      setIsBorderMagicColorMode(false);
+                      setIsBorderTransparent(false);
+                    }}
                   >
                     自定义
                   </button>
@@ -440,10 +445,20 @@ function Controls() {
                     className={`color-mode-btn ${isBorderMagicColorMode ? 'active' : ''}`}
                     onClick={() => {
                       setIsBorderMagicColorMode(true);
+                      setIsBorderTransparent(false);
                       updateMagicColor();
                     }}
                   >
                     ✨魔法色
+                  </button>
+                  <button 
+                    className={`color-mode-btn ${isBorderTransparent ? 'active' : ''}`}
+                    onClick={() => {
+                      setIsBorderMagicColorMode(false);
+                      setIsBorderTransparent(true);
+                    }}
+                  >
+                    🌫️透明
                   </button>
                 </div>
                 <div className="color-picker-container">
@@ -451,14 +466,16 @@ function Controls() {
                     type="color" 
                     value={isBorderMagicColorMode ? magicColor : borderColor} 
                     onChange={(e) => {
-                      if (!isBorderMagicColorMode) {
+                      if (!isBorderMagicColorMode && !isBorderTransparent) {
                         setBorderColor(e.target.value);
                       }
                     }} 
                     className="color-picker" 
-                    disabled={isBorderMagicColorMode}
+                    disabled={isBorderMagicColorMode || isBorderTransparent}
                   />
-                  <span>{isBorderMagicColorMode ? magicColor : borderColor}</span>
+                  <span>
+                    {isBorderTransparent ? '透明' : (isBorderMagicColorMode ? magicColor : borderColor)}
+                  </span>
                 </div>
               </div>
             </div>

@@ -32,6 +32,7 @@ export interface SavedSettings {
   borderWidth: number; // 固定默认值，实际使用时会基于图片宽度的1%动态计算
   borderColor: string;
   isBorderMagicColorMode: boolean;
+  isBorderTransparent: boolean;
 }
 
 // 默认设置
@@ -58,6 +59,7 @@ export const defaultSettings: SavedSettings = {
   borderWidth: 4, // 备用默认值，实际使用时为裁剪后图片宽度的1%
   borderColor: '#ffffff',
   isBorderMagicColorMode: false,
+  isBorderTransparent: false,
 };
 
 // 保存设置到本地存储
