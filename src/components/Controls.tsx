@@ -2,6 +2,7 @@ import './Controls.css';
 import { useCover } from '../context/CoverContext';
 import ImageUploader from './ImageUploader';
 import { getFontDisplayName } from '../utils/fontUtils';
+import { clearSettings } from '../utils/localStorageUtils';
 
 // 定义宽高比常量
 const ASPECT_RATIOS = {
@@ -55,6 +56,7 @@ function Controls() {
     magicColor,
     updateMagicColor,
     croppedImageDimensions,
+    originalImageDimensions,
     isCropping,
     handleApplyCrop,
     handleDownload,
@@ -76,6 +78,15 @@ function Controls() {
     }
   };
 
+  // 处理清除设置的函数
+  const handleClearSettings = () => {
+    if (confirm('确定要清除所有保存的设置吗？这将重置所有参数为默认值。')) {
+      clearSettings();
+      // 刷新页面以重新加载默认设置
+      window.location.reload();
+    }
+  };
+
   return (
     <div className="controls-wrapper">
       <div className="controls-section">
@@ -85,6 +96,27 @@ function Controls() {
           onApplyCrop={handleApplyCrop}
           setIsCropping={setIsCropping}
         />
+
+        {/* 显示图片尺寸信息 */}
+        {(originalImageDimensions || croppedImageDimensions) && (
+          <div className="control-group">
+            <label>图片尺寸信息</label>
+            <div className="image-dimensions-info">
+              {originalImageDimensions && (
+                <div className="dimension-item">
+                  <span className="dimension-label">原始:</span>
+                  <span className="dimension-value">{originalImageDimensions.width} × {originalImageDimensions.height}</span>
+                </div>
+              )}
+              {croppedImageDimensions && (
+                <div className="dimension-item">
+                  <span className="dimension-label">裁剪后:</span>
+                  <span className="dimension-value">{croppedImageDimensions.width} × {croppedImageDimensions.height}</span>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         <div className="control-group">
           <label>宽高比</label>
@@ -364,9 +396,15 @@ function Controls() {
           {isGeneratingPreview ? '⏳ 生成中...' : '🖼️ 生成预览'}
         </button>
         
-        <button onClick={resetToDefaults} className="control-button reset-button">
-          🔄 恢复默认
-        </button>
+        <div className="button-row">
+          <button onClick={resetToDefaults} className="control-button reset-button">
+            🔄 恢复默认
+          </button>
+
+          <button onClick={handleClearSettings} className="control-button clear-settings-button">
+            🗑️ 清除设置
+          </button>
+        </div>
 
         <button onClick={handleDownload} className="control-button download-button">
           📥 下载封面
