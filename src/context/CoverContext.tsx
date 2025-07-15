@@ -71,6 +71,15 @@ interface CoverContextType {
     croppedImageDimensions: { width: number; height: number } | null;
     // 添加原始图片尺寸
     originalImageDimensions: { width: number; height: number } | null;
+    // 添加边框控制
+    borderEnabled: boolean;
+    setBorderEnabled: (enabled: boolean) => void;
+    borderWidth: number;
+    setBorderWidth: (width: number) => void;
+    borderColor: string;
+    setBorderColor: (color: string) => void;
+    isBorderMagicColorMode: boolean;
+    setIsBorderMagicColorMode: (isMagic: boolean) => void;
     // 添加预览相关状态
     previewImage: string | null;
     isGeneratingPreview: boolean;
@@ -139,6 +148,11 @@ export const CoverProvider: React.FC<CoverProviderProps> = ({ children }) => {
     const [croppedImageDimensions, setCroppedImageDimensions] = useState<{ width: number; height: number } | null>(null);
     // 原始图片尺寸状态
     const [originalImageDimensions, setOriginalImageDimensions] = useState<{ width: number; height: number } | null>(null);
+    // 边框状态
+    const [borderEnabled, setBorderEnabled] = useState<boolean>(savedSettings.borderEnabled);
+    const [borderWidth, setBorderWidth] = useState<number>(savedSettings.borderWidth);
+    const [borderColor, setBorderColor] = useState<string>(savedSettings.borderColor);
+    const [isBorderMagicColorMode, setIsBorderMagicColorMode] = useState<boolean>(savedSettings.isBorderMagicColorMode);
     const [isCropping, setIsCropping] = useState<boolean>(true);
     // 添加预览相关状态
     const [previewImage, setPreviewImage] = useState<string | null>(null);
@@ -168,6 +182,10 @@ export const CoverProvider: React.FC<CoverProviderProps> = ({ children }) => {
             aspect,
             borderRadius,
             zoom,
+            borderEnabled,
+            borderWidth,
+            borderColor,
+            isBorderMagicColorMode,
         };
     }, [
         title,
@@ -188,6 +206,10 @@ export const CoverProvider: React.FC<CoverProviderProps> = ({ children }) => {
         aspect,
         borderRadius,
         zoom,
+        borderEnabled,
+        borderWidth,
+        borderColor,
+        isBorderMagicColorMode,
     ]);
 
     // 自动保存设置到本地存储
@@ -292,6 +314,10 @@ export const CoverProvider: React.FC<CoverProviderProps> = ({ children }) => {
                 textBackgroundOpacity,
                 isMagicColorMode,
                 magicColor,
+                borderEnabled,
+                borderWidth,
+                borderColor,
+                isBorderMagicColorMode,
             });
             
             if (finalImage) {
@@ -327,6 +353,10 @@ export const CoverProvider: React.FC<CoverProviderProps> = ({ children }) => {
         textBackgroundOpacity,
         isMagicColorMode,
         magicColor,
+        borderEnabled,
+        borderWidth,
+        borderColor,
+        isBorderMagicColorMode,
         previewImage,
     ]);
 
@@ -361,6 +391,10 @@ export const CoverProvider: React.FC<CoverProviderProps> = ({ children }) => {
         setTextOffsetX(defaults.textOffsetX);
         setTextOffsetY(defaults.textOffsetY);
         setZoom(defaults.zoom);
+        setBorderEnabled(defaults.borderEnabled);
+        setBorderWidth(defaults.borderWidth);
+        setBorderColor(defaults.borderColor);
+        setIsBorderMagicColorMode(defaults.isBorderMagicColorMode);
         
         // 智能字体大小和圆角：如果有裁剪后的图片尺寸，使用智能计算；否则使用固定默认值
         if (croppedImageDimensions) {
@@ -386,6 +420,12 @@ export const CoverProvider: React.FC<CoverProviderProps> = ({ children }) => {
             const maxBorderRadius = Math.round(croppedImageDimensions.width * 0.25);
             const finalBorderRadius = Math.min(smartBorderRadius, maxBorderRadius);
             setBorderRadius(finalBorderRadius);
+            
+            // 根据裁剪后的图片宽度设置智能边框粗细默认值（1%）
+            const maxBorderWidth = Math.round(croppedImageDimensions.width * 0.05);
+            const smartBorderWidth = Math.round(croppedImageDimensions.width * 0.01); // 默认为图片宽度的1%
+            const finalBorderWidth = Math.min(smartBorderWidth, maxBorderWidth);
+            setBorderWidth(finalBorderWidth);
         } else {
             // 如果没有裁剪后的图片尺寸，使用固定默认值
             setTitleSize(defaults.titleSize);
@@ -434,6 +474,10 @@ export const CoverProvider: React.FC<CoverProviderProps> = ({ children }) => {
                 textBackgroundOpacity,
                 isMagicColorMode,
                 magicColor,
+                borderEnabled,
+                borderWidth,
+                borderColor,
+                isBorderMagicColorMode,
             });
             
             if (finalImage) {
@@ -475,6 +519,10 @@ export const CoverProvider: React.FC<CoverProviderProps> = ({ children }) => {
                 textBackgroundOpacity,
                 isMagicColorMode,
                 magicColor,
+                borderEnabled,
+                borderWidth,
+                borderColor,
+                isBorderMagicColorMode,
             });
             
             if (finalImage) {
@@ -508,7 +556,25 @@ export const CoverProvider: React.FC<CoverProviderProps> = ({ children }) => {
                 const finalBorderRadius = Math.min(smartBorderRadius, maxBorderRadius);
                 setBorderRadius(finalBorderRadius);
                 
-                // 应用裁剪后自动生成预览，使用新计算的字体大小和圆角
+                // 根据裁剪后的图片宽度调整边框粗细范围和默认值
+                const maxBorderWidth = Math.round(finalImage.width * 0.05);
+                const defaultBorderWidth = Math.round(finalImage.width * 0.01); // 默认为图片宽度的1%
+                
+                // 如果当前边框粗细超出范围，则调整到默认值或最大值
+                let adjustedBorderWidth = borderWidth;
+                if (borderWidth > maxBorderWidth) {
+                    adjustedBorderWidth = Math.min(defaultBorderWidth, maxBorderWidth);
+                } else if (borderWidth === 4) {
+                    // 如果是旧的固定默认值4px，则更新为新的智能默认值
+                    adjustedBorderWidth = defaultBorderWidth;
+                }
+                
+                // 先更新边框粗细状态
+                if (adjustedBorderWidth !== borderWidth) {
+                    setBorderWidth(adjustedBorderWidth);
+                }
+                
+                // 应用裁剪后自动生成预览，使用新计算的字体大小、圆角和边框粗细
                 try {
                     setIsGeneratingPreview(true);
                     const newPreviewImage = await getFinalImage({
@@ -531,6 +597,10 @@ export const CoverProvider: React.FC<CoverProviderProps> = ({ children }) => {
                         textBackgroundOpacity,
                         isMagicColorMode,
                         magicColor,
+                        borderEnabled,
+                        borderWidth: adjustedBorderWidth, // 确保使用调整后的边框粗细值
+                        borderColor,
+                        isBorderMagicColorMode,
                     });
                     
                     if (newPreviewImage) {
@@ -605,6 +675,14 @@ export const CoverProvider: React.FC<CoverProviderProps> = ({ children }) => {
                 croppedImage,
                 croppedImageDimensions,
                 originalImageDimensions,
+                borderEnabled,
+                setBorderEnabled,
+                borderWidth,
+                setBorderWidth,
+                borderColor,
+                setBorderColor,
+                isBorderMagicColorMode,
+                setIsBorderMagicColorMode,
                 previewImage,
                 isGeneratingPreview,
                 previewContainerRef,

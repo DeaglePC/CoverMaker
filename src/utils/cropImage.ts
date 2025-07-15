@@ -36,6 +36,11 @@ export interface DrawOptions {
   // 添加魔法色控制
   isMagicColorMode?: boolean;
   magicColor?: string;
+  // 添加边框控制
+  borderEnabled?: boolean;
+  borderWidth?: number;
+  borderColor?: string;
+  isBorderMagicColorMode?: boolean;
 }
 
 /**
@@ -302,6 +307,10 @@ export async function getFinalImage(
     textBackgroundOpacity = 50,
     isMagicColorMode = false,
     magicColor = '#333333',
+    borderEnabled = false,
+    borderWidth = 4,
+    borderColor = '#ffffff',
+    isBorderMagicColorMode = false,
   } = options;
 
   const image = await createImage(imageSrc);
@@ -497,6 +506,39 @@ export async function getFinalImage(
   ctx.font = contentFont;
   if (content) {
     drawMultilineText(ctx, content, contentX, contentY, maxWidth, contentLineHeight, textHAlign);
+  }
+
+  // --- Draw Border ---
+  if (borderEnabled && borderWidth > 0) {
+    ctx.save();
+    
+    // 清除阴影效果，避免边框有阴影
+    ctx.shadowColor = 'transparent';
+    ctx.shadowBlur = 0;
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 0;
+    
+    // 设置边框样式
+    const finalBorderColor = isBorderMagicColorMode ? magicColor : borderColor;
+    ctx.strokeStyle = finalBorderColor;
+    ctx.lineWidth = borderWidth;
+    
+    // 边框应该从边框宽度的一半开始绘制，这样边框不会超出画布边界
+    const borderOffset = borderWidth / 2;
+    const borderX = borderOffset;
+    const borderY = borderOffset;
+    const borderInnerWidth = canvas.width - borderWidth;
+    const borderInnerHeight = canvas.height - borderWidth;
+    
+    // 确保边框圆角与图片圆角一致，但要考虑边框偏移
+    const borderRadius = Math.max(0, actualRadius - borderOffset);
+    
+    // 绘制边框路径
+    ctx.beginPath();
+    roundRect(ctx, borderX, borderY, borderInnerWidth, borderInnerHeight, borderRadius);
+    ctx.stroke();
+    
+    ctx.restore();
   }
 
   // --- Export ---

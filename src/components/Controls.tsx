@@ -66,6 +66,15 @@ function Controls() {
     isGeneratingPreview,
     handleGeneratePreview,
     resetToDefaults,
+    // 边框相关状态
+    borderEnabled,
+    setBorderEnabled,
+    borderWidth,
+    setBorderWidth,
+    borderColor,
+    setBorderColor,
+    isBorderMagicColorMode,
+    setIsBorderMagicColorMode,
   } = useCover();
 
   // 处理宽高比变更的函数
@@ -84,6 +93,13 @@ function Controls() {
       // 刷新页面以重新加载默认设置
       window.location.reload();
     }
+  };
+
+  // 处理边框粗细变化，确保在有效范围内
+  const handleBorderWidthChange = (newWidth: number) => {
+    const maxWidth = croppedImageDimensions ? Math.round(croppedImageDimensions.width * 0.05) : 20;
+    const validWidth = Math.min(newWidth, maxWidth);
+    setBorderWidth(validWidth);
   };
 
   return (
@@ -382,6 +398,72 @@ function Controls() {
             className="slider"
           />
         </div>
+
+        {/* 边框控制 */}
+        <div className="control-group">
+          <label>
+            <input
+              type="checkbox"
+              checked={borderEnabled}
+              onChange={(e) => setBorderEnabled(e.target.checked)}
+              style={{ marginRight: '8px' }}
+            />
+            启用边框
+          </label>
+        </div>
+
+        {borderEnabled && (
+          <>
+            <div className="control-group">
+              <label>边框粗细: {borderWidth}px</label>
+              <input
+                type="range"
+                min="1"
+                max={croppedImageDimensions ? Math.round(croppedImageDimensions.width * 0.05) : 20}
+                value={borderWidth}
+                onChange={(e) => handleBorderWidthChange(Number(e.target.value))}
+                className="slider"
+              />
+            </div>
+
+            <div className="control-group">
+              <label>边框颜色</label>
+              <div className="color-control-container">
+                <div className="color-mode-buttons">
+                  <button 
+                    className={`color-mode-btn ${!isBorderMagicColorMode ? 'active' : ''}`}
+                    onClick={() => setIsBorderMagicColorMode(false)}
+                  >
+                    自定义
+                  </button>
+                  <button 
+                    className={`color-mode-btn ${isBorderMagicColorMode ? 'active' : ''}`}
+                    onClick={() => {
+                      setIsBorderMagicColorMode(true);
+                      updateMagicColor();
+                    }}
+                  >
+                    ✨魔法色
+                  </button>
+                </div>
+                <div className="color-picker-container">
+                  <input 
+                    type="color" 
+                    value={isBorderMagicColorMode ? magicColor : borderColor} 
+                    onChange={(e) => {
+                      if (!isBorderMagicColorMode) {
+                        setBorderColor(e.target.value);
+                      }
+                    }} 
+                    className="color-picker" 
+                    disabled={isBorderMagicColorMode}
+                  />
+                  <span>{isBorderMagicColorMode ? magicColor : borderColor}</span>
+                </div>
+              </div>
+            </div>
+          </>
+        )}
 
         {/* 恢复默认和清除设置按钮 */}
         <div className="control-group">
