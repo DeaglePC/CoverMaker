@@ -1,4 +1,4 @@
-import React, { createContext, useState, useRef, useContext, useCallback, ReactNode } from 'react';
+import React, { createContext, useState, useRef, useContext, useCallback, ReactNode, useEffect } from 'react';
 import { Area } from 'react-easy-crop';
 // 导入新的类型
 import { getFinalImage } from '../utils/cropImage';
@@ -6,6 +6,8 @@ import { getFinalImage } from '../utils/cropImage';
 import { getMagicBackgroundColor } from '../utils/colorExtractor';
 // 导入字体工具函数
 import { getAvailableFonts } from '../utils/fontUtils';
+// 导入本地存储工具函数
+import { loadSettings, saveSettings, clearSettings, SavedSettings } from '../utils/localStorageUtils';
 
 type VAlign = 'top' | 'center' | 'bottom';
 
@@ -67,6 +69,8 @@ interface CoverContextType {
     croppedImage: string | null;
     // 添加新的 state 类型
     croppedImageDimensions: { width: number; height: number } | null;
+    // 添加原始图片尺寸
+    originalImageDimensions: { width: number; height: number } | null;
     // 添加预览相关状态
     previewImage: string | null;
     isGeneratingPreview: boolean;
@@ -97,44 +101,110 @@ interface CoverProviderProps {
 }
 
 export const CoverProvider: React.FC<CoverProviderProps> = ({ children }) => {
+    // 加载保存的设置
+    const savedSettings = loadSettings();
+    
     const [imageSrc, setImageSrc] = useState<string | null>(null);
-    const [title, setTitle] = useState<string>('这里是标题');
-    const [content, setContent] = useState<string>('这里是正文内容，可以根据需要修改。');
-    const [aspect, setAspect] = useState<number>(3 / 4);
-    const [borderRadius, setBorderRadius] = useState<number>(50);
-    const [textColor, setTextColor] = useState<string>('#ffffff');
-    const [textVAlign, setTextVAlign] = useState<VAlign>('bottom');
+    const [title, setTitle] = useState<string>(savedSettings.title);
+    const [content, setContent] = useState<string>(savedSettings.content);
+    const [aspect, setAspect] = useState<number>(savedSettings.aspect);
+    const [borderRadius, setBorderRadius] = useState<number>(savedSettings.borderRadius);
+    const [textColor, setTextColor] = useState<string>(savedSettings.textColor);
+    const [textVAlign, setTextVAlign] = useState<VAlign>(savedSettings.textVAlign);
     // 添加文字大小状态
-    const [titleSize, setTitleSize] = useState<number>(80);
-    const [contentSize, setContentSize] = useState<number>(38);
+    const [titleSize, setTitleSize] = useState<number>(savedSettings.titleSize);
+    const [contentSize, setContentSize] = useState<number>(savedSettings.contentSize);
     // 添加文字位置状态
-    const [textHAlign, setTextHAlign] = useState<'left' | 'center' | 'right'>('center');
+    const [textHAlign, setTextHAlign] = useState<'left' | 'center' | 'right'>(savedSettings.textHAlign);
     // 添加字体状态
-    const [fontFamily, setFontFamily] = useState<string>('Microsoft YaHei, sans-serif');
+    const [fontFamily, setFontFamily] = useState<string>(savedSettings.fontFamily);
     const [availableFonts] = useState(getAvailableFonts());
     // 添加标题和内容间距状态
-    const [titleContentSpacing, setTitleContentSpacing] = useState<number>(80);
+    const [titleContentSpacing, setTitleContentSpacing] = useState<number>(savedSettings.titleContentSpacing);
     // 添加文字背景状态
-    const [textBackgroundEnabled, setTextBackgroundEnabled] = useState<boolean>(true);
-    const [textBackgroundColor, setTextBackgroundColor] = useState<string>('#000000');
-    const [textBackgroundOpacity, setTextBackgroundOpacity] = useState<number>(88);
+    const [textBackgroundEnabled, setTextBackgroundEnabled] = useState<boolean>(savedSettings.textBackgroundEnabled);
+    const [textBackgroundColor, setTextBackgroundColor] = useState<string>(savedSettings.textBackgroundColor);
+    const [textBackgroundOpacity, setTextBackgroundOpacity] = useState<number>(savedSettings.textBackgroundOpacity);
     // 添加魔法色状态
-    const [isMagicColorMode, setIsMagicColorMode] = useState<boolean>(true);
+    const [isMagicColorMode, setIsMagicColorMode] = useState<boolean>(savedSettings.isMagicColorMode);
     const [magicColor, setMagicColor] = useState<string>('#333333');
     // 添加文字位置偏移状态
-    const [textOffsetX, setTextOffsetX] = useState<number>(0);
-    const [textOffsetY, setTextOffsetY] = useState<number>(0);
+    const [textOffsetX, setTextOffsetX] = useState<number>(savedSettings.textOffsetX);
+    const [textOffsetY, setTextOffsetY] = useState<number>(savedSettings.textOffsetY);
     const [crop, setCrop] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
-    const [zoom, setZoom] = useState<number>(1);
+    const [zoom, setZoom] = useState<number>(savedSettings.zoom);
     const [completedCrop, setCompletedCrop] = useState<Area | null>(null);
     const [croppedImage, setCroppedImage] = useState<string | null>(null);
     // 定义新的 state
     const [croppedImageDimensions, setCroppedImageDimensions] = useState<{ width: number; height: number } | null>(null);
+    // 原始图片尺寸状态
+    const [originalImageDimensions, setOriginalImageDimensions] = useState<{ width: number; height: number } | null>(null);
     const [isCropping, setIsCropping] = useState<boolean>(true);
     // 添加预览相关状态
     const [previewImage, setPreviewImage] = useState<string | null>(null);
     const [isGeneratingPreview, setIsGeneratingPreview] = useState<boolean>(false);
     const previewContainerRef = useRef<HTMLDivElement>(null);
+    // 防止初始化时自动保存的标志
+    const isInitializedRef = useRef<boolean>(false);
+
+    // 收集当前设置的函数
+    const getCurrentSettings = useCallback((): SavedSettings => {
+        return {
+            title,
+            content,
+            textColor,
+            textVAlign,
+            textHAlign,
+            titleSize,
+            contentSize,
+            fontFamily,
+            titleContentSpacing,
+            textOffsetX,
+            textOffsetY,
+            textBackgroundEnabled,
+            textBackgroundColor,
+            textBackgroundOpacity,
+            isMagicColorMode,
+            aspect,
+            borderRadius,
+            zoom,
+        };
+    }, [
+        title,
+        content,
+        textColor,
+        textVAlign,
+        textHAlign,
+        titleSize,
+        contentSize,
+        fontFamily,
+        titleContentSpacing,
+        textOffsetX,
+        textOffsetY,
+        textBackgroundEnabled,
+        textBackgroundColor,
+        textBackgroundOpacity,
+        isMagicColorMode,
+        aspect,
+        borderRadius,
+        zoom,
+    ]);
+
+    // 自动保存设置到本地存储
+    useEffect(() => {
+        // 首次渲染时设置初始化标志
+        if (!isInitializedRef.current) {
+            isInitializedRef.current = true;
+            return;
+        }
+
+        const timeoutId = setTimeout(() => {
+            const currentSettings = getCurrentSettings();
+            saveSettings(currentSettings);
+        }, 500); // 500ms 延迟，避免过于频繁的保存
+
+        return () => clearTimeout(timeoutId);
+    }, [getCurrentSettings]);
 
     const onCropComplete = useCallback((_croppedArea: Area, croppedAreaPixels: Area) => {
         // Only set the crop if the values are valid numbers
@@ -164,12 +234,23 @@ export const CoverProvider: React.FC<CoverProviderProps> = ({ children }) => {
                 setImageSrc(imageSrcUrl);
                 setCroppedImage(null);
                 setCroppedImageDimensions(null); // 上传新图片时重置尺寸
+                setOriginalImageDimensions(null); // 上传新图片时重置原始尺寸
                 setPreviewImage(null); // 清除预览图片
                 setIsCropping(true);
                 setZoom(1);
                 
-                // 异步更新魔法色
+                // 获取原始图片尺寸
                 if (imageSrcUrl) {
+                    const img = new Image();
+                    img.onload = () => {
+                        setOriginalImageDimensions({
+                            width: img.naturalWidth,
+                            height: img.naturalHeight
+                        });
+                    };
+                    img.src = imageSrcUrl;
+                    
+                    // 异步更新魔法色
                     getMagicBackgroundColor(imageSrcUrl).then(color => {
                         setMagicColor(color);
                     }).catch(error => {
@@ -259,25 +340,32 @@ export const CoverProvider: React.FC<CoverProviderProps> = ({ children }) => {
 
     // 恢复默认值函数
     const resetToDefaults = useCallback(async () => {
-        setTitle('这里是标题');
-        setContent('这里是正文内容，可以根据需要修改。');
-        setTextColor('#ffffff');
-        setTextVAlign('bottom');
-        setTextHAlign('center');
-        setFontFamily('Microsoft YaHei, sans-serif');
-        setBorderRadius(50);
-        setTextBackgroundEnabled(true);
-        setTextBackgroundColor('#000000');
-        setTextBackgroundOpacity(88);
-        setIsMagicColorMode(true);
+        // 清除本地存储
+        clearSettings();
+        
+        // 加载默认设置
+        const defaults = loadSettings(); // 这会返回默认设置，因为本地存储已被清除
+        
+        setTitle(defaults.title);
+        setContent(defaults.content);
+        setTextColor(defaults.textColor);
+        setTextVAlign(defaults.textVAlign);
+        setTextHAlign(defaults.textHAlign);
+        setFontFamily(defaults.fontFamily);
+        setBorderRadius(defaults.borderRadius);
+        setTextBackgroundEnabled(defaults.textBackgroundEnabled);
+        setTextBackgroundColor(defaults.textBackgroundColor);
+        setTextBackgroundOpacity(defaults.textBackgroundOpacity);
+        setIsMagicColorMode(defaults.isMagicColorMode);
         setMagicColor('#333333');
-        setTextOffsetX(0);
-        setTextOffsetY(0);
+        setTextOffsetX(defaults.textOffsetX);
+        setTextOffsetY(defaults.textOffsetY);
+        setZoom(defaults.zoom);
         
         // 智能字体大小和圆角：如果有裁剪后的图片尺寸，使用智能计算；否则使用固定默认值
         if (croppedImageDimensions) {
-            const smartTitleSize = Math.round(croppedImageDimensions.width * 0.07);
-            const smartContentSize = Math.round(croppedImageDimensions.width * 0.05);
+            const smartTitleSize = Math.round(croppedImageDimensions.width * 0.1);
+            const smartContentSize = Math.round(croppedImageDimensions.width * 0.07);
             
             // 设置合理的字体大小范围（根据图片宽度动态计算最大值）
             const minTitleSize = 12;
@@ -294,17 +382,17 @@ export const CoverProvider: React.FC<CoverProviderProps> = ({ children }) => {
             setTitleContentSpacing(finalTitleSize);
             
             // 根据裁剪后的图片宽度智能调整圆角
-            const smartBorderRadius = Math.round(croppedImageDimensions.width * 0.065);
+            const smartBorderRadius = Math.round(croppedImageDimensions.width * 0.1);
             const maxBorderRadius = Math.round(croppedImageDimensions.width * 0.25);
             const finalBorderRadius = Math.min(smartBorderRadius, maxBorderRadius);
             setBorderRadius(finalBorderRadius);
         } else {
             // 如果没有裁剪后的图片尺寸，使用固定默认值
-            setTitleSize(80);
-            setContentSize(38);
+            setTitleSize(defaults.titleSize);
+            setContentSize(defaults.contentSize);
             // 间距大小与标题大小保持一致
-            setTitleContentSpacing(80);
-            setBorderRadius(50);
+            setTitleContentSpacing(defaults.titleContentSpacing);
+            setBorderRadius(defaults.borderRadius);
         }
         
         // 清理预览图片
@@ -395,8 +483,8 @@ export const CoverProvider: React.FC<CoverProviderProps> = ({ children }) => {
                 setIsCropping(false);
                 
                 // 根据裁剪后的图片宽度智能调整字体大小
-                const smartTitleSize = Math.round(finalImage.width * 0.07);
-                const smartContentSize = Math.round(finalImage.width * 0.04);
+                const smartTitleSize = Math.round(finalImage.width * 0.1);
+                const smartContentSize = Math.round(finalImage.width * 0.07);
                 
                 // 设置合理的字体大小范围（根据图片宽度动态计算最大值）
                 const minTitleSize = 12;
@@ -415,7 +503,7 @@ export const CoverProvider: React.FC<CoverProviderProps> = ({ children }) => {
                 setTitleContentSpacing(finalTitleSize);
                 
                 // 根据裁剪后的图片宽度智能调整圆角
-                const smartBorderRadius = Math.round(finalImage.width * 0.065);
+                const smartBorderRadius = Math.round(finalImage.width * 0.1);
                 const maxBorderRadius = Math.round(finalImage.width * 0.25);
                 const finalBorderRadius = Math.min(smartBorderRadius, maxBorderRadius);
                 setBorderRadius(finalBorderRadius);
@@ -516,6 +604,7 @@ export const CoverProvider: React.FC<CoverProviderProps> = ({ children }) => {
                 setIsCropping,
                 croppedImage,
                 croppedImageDimensions,
+                originalImageDimensions,
                 previewImage,
                 isGeneratingPreview,
                 previewContainerRef,
