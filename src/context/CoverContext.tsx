@@ -508,7 +508,7 @@ export const CoverProvider: React.FC<CoverProviderProps> = ({ children }) => {
                 const finalBorderRadius = Math.min(smartBorderRadius, maxBorderRadius);
                 setBorderRadius(finalBorderRadius);
                 
-                // 应用裁剪后自动生成预览，使用新计算的字体大小
+                // 应用裁剪后自动生成预览，使用新计算的字体大小和圆角
                 try {
                     setIsGeneratingPreview(true);
                     const newPreviewImage = await getFinalImage({
@@ -518,7 +518,7 @@ export const CoverProvider: React.FC<CoverProviderProps> = ({ children }) => {
                         content,
                         textColor,
                         textVAlign,
-                        borderRadius,
+                        borderRadius: finalBorderRadius, // 使用新计算的圆角值
                         titleSize: finalTitleSize,
                         contentSize: finalContentSize,
                         textHAlign,

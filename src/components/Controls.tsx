@@ -1,7 +1,6 @@
 import './Controls.css';
 import { useCover } from '../context/CoverContext';
 import ImageUploader from './ImageUploader';
-import { getFontDisplayName } from '../utils/fontUtils';
 import { clearSettings } from '../utils/localStorageUtils';
 
 // 定义宽高比常量
@@ -383,6 +382,19 @@ function Controls() {
             className="slider"
           />
         </div>
+
+        {/* 恢复默认和清除设置按钮 */}
+        <div className="control-group">
+          <div className="button-row">
+            <button onClick={resetToDefaults} className="control-button reset-button">
+              🔄 恢复默认
+            </button>
+
+            <button onClick={handleClearSettings} className="control-button clear-settings-button">
+              🗑️ 清除设置
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* 固定底部按钮区域 */}
@@ -395,16 +407,6 @@ function Controls() {
         >
           {isGeneratingPreview ? '⏳ 生成中...' : '🖼️ 生成预览'}
         </button>
-        
-        <div className="button-row">
-          <button onClick={resetToDefaults} className="control-button reset-button">
-            🔄 恢复默认
-          </button>
-
-          <button onClick={handleClearSettings} className="control-button clear-settings-button">
-            🗑️ 清除设置
-          </button>
-        </div>
 
         <button onClick={handleDownload} className="control-button download-button">
           📥 下载封面

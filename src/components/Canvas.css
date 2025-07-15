@@ -84,4 +84,60 @@
 .placeholder p {
   margin: 0 0 10px 0;
   font-size: 16px;
+}
+
+/* 移动端优化 */
+@media (max-width: 1024px) {
+  .canvas-content-wrapper {
+    padding: 8px;
+  }
+  
+  .preview-image {
+    border-radius: 8px; /* 在移动端也保持圆角效果 */
+  }
+  
+  .loading-indicator {
+    padding: 20px;
+  }
+  
+  .spinner {
+    width: 30px;
+    height: 30px;
+    margin-bottom: 12px;
+  }
+  
+  .placeholder {
+    padding: 20px;
+    font-size: 14px;
+  }
+  
+  .placeholder p {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 768px) {
+  .canvas-content-wrapper {
+    padding: 5px;
+  }
+  
+  .loading-indicator {
+    padding: 15px;
+  }
+  
+  .spinner {
+    width: 25px;
+    height: 25px;
+    margin-bottom: 10px;
+  }
+  
+  .placeholder {
+    padding: 15px;
+    font-size: 12px;
+  }
+  
+  .placeholder p {
+    font-size: 12px;
+    margin: 0 0 8px 0;
+  }
 } 
