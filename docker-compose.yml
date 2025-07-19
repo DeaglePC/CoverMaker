@@ -6,7 +6,7 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "3000:80"
+      - "3800:80"
     container_name: covermaker-app
     restart: unless-stopped
     environment:

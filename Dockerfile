@@ -1,5 +1,5 @@
 # 第一阶段：构建阶段
-FROM node:18-alpine AS builder
+FROM node:20-alpine AS builder
 
 # 设置工作目录
 WORKDIR /app
@@ -17,7 +17,7 @@ COPY . .
 RUN npm run build
 
 # 第二阶段：运行阶段
-FROM nginx:alpine
+FROM nginx:stable-alpine
 
 # 复制构建后的文件到 nginx 目录
 COPY --from=builder /app/dist /usr/share/nginx/html
