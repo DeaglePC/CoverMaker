@@ -2,7 +2,7 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  background-color: #f8f9fa;
+  background-color: var(--bg-secondary);
   border-radius: 8px;
   overflow: hidden;
 }
@@ -21,11 +21,11 @@
 .fixed-bottom-actions {
   position: sticky;
   bottom: 0;
-  background-color: #f8f9fa;
-  border-top: 1px solid #dee2e6;
+  background-color: var(--bg-secondary);
+  border-top: 1px solid var(--border-color);
   padding: 1rem;
   margin-top: auto;
-  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 -2px 8px var(--shadow-color);
 }
 
 .control-group-grid {
@@ -44,21 +44,21 @@
   cursor: pointer;
   transition: all 0.2s ease-in-out;
   text-align: center;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  box-shadow: 0 1px 3px var(--shadow-color);
 }
 
 .upload-button {
-  background-color: #0d6efd;
+  background-color: var(--brand-primary);
   color: white;
 }
 .upload-button:hover {
-  background-color: #0b5ed7;
+  background-color: var(--brand-secondary);
   transform: translateY(-1px);
 }
 
 .apply-button, .recrop-button {
   background-color: #ffc107;
-  color: #212529;
+  color: var(--text-primary);
 }
 .apply-button:hover, .recrop-button:hover {
   background-color: #ffca2c;
@@ -123,8 +123,8 @@
   flex-direction: column;
   gap: 0.5rem;
   padding: 0.75rem;
-  background-color: #f8f9fa;
-  border: 1px solid #dee2e6;
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
   border-radius: 6px;
   font-size: 0.9rem;
 }
@@ -137,14 +137,14 @@
 
 .dimension-label {
   font-weight: 500;
-  color: #495057;
+  color: var(--text-secondary);
 }
 
 .dimension-value {
   font-family: 'Courier New', monospace;
-  color: #212529;
+  color: var(--text-primary);
   font-weight: 600;
-  background-color: #e9ecef;
+  background-color: var(--bg-tertiary);
   padding: 2px 6px;
   border-radius: 3px;
 }
@@ -244,7 +244,7 @@
 .control-group label {
   font-weight: 500;
   font-size: 0.9rem;
-  color: #495057;
+  color: var(--text-secondary);
   display: flex;
   align-items: center;
   cursor: pointer;
@@ -255,10 +255,11 @@
 .control-group select {
   width: 100%;
   padding: 8px 12px;
-  border: 1px solid #ced4da;
+  border: 1px solid var(--border-color);
   border-radius: 6px;
   font-size: 0.9rem;
-  background-color: #fff;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
   transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
   box-sizing: border-box;
 }
@@ -267,7 +268,7 @@
 .control-group textarea:focus,
 .control-group select:focus {
   outline: none;
-  border-color: #86b7fe;
+  border-color: var(--brand-primary);
   box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.2);
 }
 
@@ -290,7 +291,7 @@
 .control-group input[type="checkbox"] {
   width: 16px;
   height: 16px;
-  accent-color: #0d6efd;
+  accent-color: var(--brand-primary);
   cursor: pointer;
 }
 
@@ -305,7 +306,7 @@
 
 .aspect-ratio-label {
   font-size: 0.8rem;
-  color: #6c757d;
+  color: var(--text-muted);
   margin-bottom: 0.5rem;
   font-weight: 500;
   text-align: center;
@@ -319,23 +320,24 @@
 
 .aspect-ratio-buttons button, .align-buttons button {
   padding: 8px;
-  border: 1px solid #ced4da;
+  border: 1px solid var(--border-color);
   border-radius: 6px;
-  background-color: #fff;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
   cursor: pointer;
   transition: all 0.2s ease;
   font-size: 0.85rem;
 }
 
 .aspect-ratio-buttons button.active, .align-buttons button.active {
-  background-color: #0d6efd;
+  background-color: var(--brand-primary);
   color: white;
-  border-color: #0d6efd;
+  border-color: var(--brand-primary);
   font-weight: 500;
 }
 
 .aspect-ratio-buttons button:not(.active):hover, .align-buttons button:not(.active):hover {
-  background-color: #e9ecef;
+  background-color: var(--bg-tertiary);
 }
 
 /* 颜色选择器样式 */
@@ -353,10 +355,10 @@
 .color-mode-btn {
   flex: 1;
   padding: 8px 12px;
-  border: 2px solid #3498db;
+  border: 2px solid var(--brand-primary);
   border-radius: 8px;
   background-color: transparent;
-  color: #3498db;
+  color: var(--brand-primary);
   cursor: pointer;
   transition: all 0.2s ease;
   font-size: 14px;
@@ -364,12 +366,12 @@
 }
 
 .color-mode-btn:hover {
-  background-color: #3498db;
+  background-color: var(--brand-primary);
   color: white;
 }
 
 .color-mode-btn.active {
-  background-color: #3498db;
+  background-color: var(--brand-primary);
   color: white;
 }
 
@@ -377,15 +379,16 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  background-color: #fff;
+  background-color: var(--bg-primary);
   padding: 5px 10px;
   border-radius: 6px;
-  border: 1px solid #ced4da;
+  border: 1px solid var(--border-color);
 }
 
 .color-picker-container span {
   font-family: monospace;
   font-size: 0.9rem;
+  color: var(--text-primary);
 }
 
 .color-picker {
@@ -407,12 +410,12 @@
 
 .color-picker::-webkit-color-swatch {
   border-radius: 6px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-color);
 }
 
 .color-picker::-moz-color-swatch {
   border-radius: 6px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-color);
 }
 
 /* 滑块样式优化 - 蓝色主题 */
@@ -420,7 +423,7 @@
   width: 100%;
   height: 6px;
   border-radius: 3px;
-  background: #ddd !important;
+  background: var(--bg-tertiary) !important;
   outline: none;
   transition: background 0.2s;
   cursor: pointer;
@@ -430,7 +433,7 @@
 }
 
 .slider:hover {
-  background: #bbb !important;
+  background: var(--border-color) !important;
 }
 
 .slider::-webkit-slider-thumb {
@@ -439,15 +442,15 @@
   width: 18px;
   height: 18px;
   border-radius: 50%;
-  background: #3498db !important;
+  background: var(--brand-primary) !important;
   cursor: pointer;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 6px var(--shadow-color);
   transition: all 0.2s ease-in-out;
   border: none;
 }
 
 .slider::-webkit-slider-thumb:hover {
-  background: #2980b9 !important;
+  background: var(--brand-secondary) !important;
   transform: scale(1.1);
 }
 
@@ -455,21 +458,21 @@
   width: 18px;
   height: 18px;
   border-radius: 50%;
-  background: #3498db !important;
+  background: var(--brand-primary) !important;
   cursor: pointer;
   border: none;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 6px var(--shadow-color);
   transition: all 0.2s ease-in-out;
   -moz-appearance: none;
 }
 
 .slider::-moz-range-thumb:hover {
-  background: #2980b9 !important;
+  background: var(--brand-secondary) !important;
   transform: scale(1.1);
 }
 
 .slider::-moz-range-track {
-  background: #ddd !important;
+  background: var(--bg-tertiary) !important;
   height: 6px;
   border-radius: 3px;
   border: none;
@@ -479,14 +482,14 @@
   width: 18px;
   height: 18px;
   border-radius: 50%;
-  background: #3498db !important;
+  background: var(--brand-primary) !important;
   cursor: pointer;
   border: none;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 6px var(--shadow-color);
 }
 
 .slider::-ms-track {
-  background: #ddd !important;
+  background: var(--bg-tertiary) !important;
   height: 6px;
   border-radius: 3px;
   border: none;
@@ -495,7 +498,7 @@
 
 .slider::-ms-fill-lower,
 .slider::-ms-fill-upper {
-  background: #ddd !important;
+  background: var(--bg-tertiary) !important;
   border-radius: 3px;
 }
 
@@ -505,11 +508,11 @@
 }
 
 .slider:disabled::-webkit-slider-thumb {
-  background: #bdc3c7 !important;
+  background: var(--text-muted) !important;
   cursor: not-allowed;
 }
 
 .slider:disabled::-moz-range-thumb {
-  background: #bdc3c7 !important;
+  background: var(--text-muted) !important;
   cursor: not-allowed;
 } 
